@@ -703,7 +703,14 @@
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            event.target.classList.add('active');
+            // 클릭된 탭 버튼 활성화
+            const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            } else if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
             document.getElementById(tabName + '-tab').classList.add('active');
             
             if (tabName === 'boards') {
@@ -810,31 +817,17 @@
             updateStatistics();
         }
 
-        // 고정 키워드 클릭 - 뉴스 사이트로 직접 이동
+        // 고정 키워드 클릭 - 하단에 뉴스 검색 결과 표시
         function onFixedKeywordClick(keyword) {
-            const selector = document.getElementById('newsSourceSelector');
-            const activeSource = selector.querySelector('.source-btn.active').dataset.source;
-            
-            let url;
-            switch(activeSource) {
-                case 'naver':
-                    url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
-                    break;
-                case 'daum':
-                    url = `https://search.daum.net/search?w=news&q=${encodeURIComponent(keyword)}`;
-                    break;
-                case 'google':
-                    url = `https://news.google.com/search?q=${encodeURIComponent(keyword)}&hl=ko&gl=KR&ceid=KR:ko`;
-                    break;
-                default:
-                    url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
+            // 빠른 검색 탭에 있는지 확인
+            const quickTab = document.getElementById('quick-tab');
+            if (!quickTab.classList.contains('active')) {
+                // 빠른 검색 탭으로 전환
+                switchTab('quick');
             }
             
-            // 새 탭에서 열기
-            window.open(url, '_blank');
-            
-            // 소스 선택기 숨기기
-            document.getElementById('newsSourceSelector').style.display = 'none';
+            // 기본 뉴스 소스를 'all'로 설정하여 검색
+            searchNews(keyword, 'all');
         }
 
         // 고정 키워드 버튼에 마우스 오버 시 소스 선택기 표시
