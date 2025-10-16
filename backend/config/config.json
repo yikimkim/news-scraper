@@ -1,0 +1,27 @@
+{
+  "server": {
+    "port": 3000,
+    "environment": "development"
+  },
+  "scraping": {
+    "schedules": {
+      "weekday_morning": "0 9 * * 1-5",
+      "weekday_afternoon": "0 13 * * 1-5",
+      "weekday_evening": "0 17 * * 1-5",
+      "weekend": "0 14 * * 6"
+    },
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "delayBetweenAgencies": 2000
+  },
+  "database": {
+    "path": "./data/government_news.db",
+    "maxConnections": 10,
+    "cleanupDays": 30
+  },
+  "logging": {
+    "level": "info",
+    "maxFileSize": "5m",
+    "maxFiles": 5
+  }
+}

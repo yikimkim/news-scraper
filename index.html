@@ -941,10 +941,7 @@
             updateStatistics();
             setupNewsSourceSelector();
             
-            // 정부 보도자료 시스템 초기화
-            if (Object.values(governmentNews).every(arr => arr.length === 0)) {
-                generateGovernmentDemoData();
-            }
+            // 정부 보도자료 시스템은 탭 전환 시 초기화됨
             
             // 키워드 입력 필드에서 Enter 키 처리
             document.getElementById('newKeyword').addEventListener('keypress', function(e) {
@@ -1635,23 +1632,21 @@
             localStorage.setItem('newsKeywords', JSON.stringify(keywords));
             localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
             localStorage.setItem('fixedKeywords', JSON.stringify(fixedKeywords));
-            localStorage.setItem('governmentNews', JSON.stringify(governmentNews));
         }
 
         // =================
-        // 정부 보도자료 시스템
+        // 정부 보도자료 시스템 (API 연동)
         // =================
         
-        // 정부 보도자료 데이터 구조
-        let governmentNews = JSON.parse(localStorage.getItem('governmentNews')) || {
-            fsc: [], // 금융위원회
-            fss: [], // 금융감독원
-            ftc: []  // 공정거래위원회
-        };
+        // API 설정
+        const API_BASE_URL = window.location.hostname.includes('sandbox') || window.location.hostname.includes('localhost') 
+            ? `${window.location.protocol}//${window.location.hostname.replace('8000-', '3001-')}`
+            : '/api'; // 프로덕션에서는 상대 경로
         
         let currentAgency = 'all';
         let currentGovernmentPage = 1;
         const governmentArticlesPerPage = 6;
+        let governmentNewsCache = null;
         
         // 기관 선택 함수
         function selectAgency(agency) {
@@ -1669,191 +1664,155 @@
             displayGovernmentNews();
         }
         
-        // 정부 보도자료 새로고침 함수
-        function refreshGovernmentNews() {
+        // 정부 보도자료 새로고침 함수 (API 기반)
+        async function refreshGovernmentNews() {
             const refreshBtn = document.getElementById('refreshBtn');
             const refreshIcon = document.getElementById('refreshIcon');
             
-            // 새로고침 애니메이션 시작
-            refreshIcon.classList.add('refreshing');
-            refreshBtn.disabled = true;
-            
-            // 데모 데이터 생성 (실제로는 정부 API 호출)
-            generateGovernmentDemoData();
-            
-            setTimeout(() => {
-                displayGovernmentNews();
-                updateLastUpdateTime();
+            try {
+                // 새로고침 애니메이션 시작
+                refreshIcon.classList.add('refreshing');
+                refreshBtn.disabled = true;
+                
+                // 서버에서 새로운 스크래핑 요청
+                const response = await fetch(`${API_BASE_URL}/api/news/scrape`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 캐시 무효화
+                    governmentNewsCache = null;
+                    
+                    // 뉴스 다시 로드
+                    await displayGovernmentNews();
+                    updateLastUpdateTime();
+                    
+                    // 성공 메시지 표시
+                    if (result.data.newItems > 0) {
+                        alert(`새로고침 완료! ${result.data.newItems}개의 새로운 보도자료가 추가되었습니다.`);
+                    } else {
+                        alert('새로고침 완료! 새로운 보도자료가 없습니다.');
+                    }
+                } else {
+                    throw new Error(result.error || '스크래핑에 실패했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('새로고침 오류:', error);
+                alert('새로고침 중 오류가 발생했습니다: ' + error.message);
+            } finally {
                 refreshIcon.classList.remove('refreshing');
                 refreshBtn.disabled = false;
-            }, 1500);
-        }
-        
-        // 데모 정부 보도자료 데이터 생성
-        function generateGovernmentDemoData() {
-            const agencies = {
-                fsc: '금융위원회',
-                fss: '금융감독원', 
-                ftc: '공정거래위원회'
-            };
-            
-            const templates = {
-                fsc: [
-                    '자본시장 개선방안 발표',
-                    '금융업 디지털 전환 가이드라인 제정',
-                    '서민금융 지원정책 확대', 
-                    '가상자산 규제 방안 논의',
-                    '금융소비자보호 강화 조치',
-                    '코로나19 금융지원 연장',
-                    'ESG 채권 발행 활성화 방안',
-                    '중소기업 금융지원 확대'
-                ],
-                fss: [
-                    '은행 건전성 감독 강화',
-                    '보험사 리스크 관리 가이드라인', 
-                    '금융회사 IT보안 점검 결과',
-                    '대부업체 불법행위 단속',
-                    '금융소비자 피해구제 현황',
-                    '카드업계 수수료 투명성 제고',
-                    '암호화폐 거래소 검사 결과',
-                    '금융권 개인정보보호 점검'
-                ],
-                ftc: [
-                    '대기업 골목상권 진출 제한',
-                    '온라인 플랫폼 독점 조사',
-                    '납품대금 지연지급 제재',
-                    '프랜차이즈 불공정행위 단속',
-                    '대형마트 의무휴업일 점검',
-                    '소비자 단체소송 활성화 방안',
-                    '전자상거래 공정경쟁 가이드라인',
-                    '하도급법 위반업체 처벌'
-                ]
-            };
-            
-            // 각 기관별로 최신 데이터 추가 (중복 방지)
-            Object.keys(agencies).forEach(agencyCode => {
-                const agencyTemplates = templates[agencyCode];
-                const existingTitles = new Set(governmentNews[agencyCode].map(item => item.title));
-                
-                // 새로운 보도자료 추가 (최대 3개)
-                for (let i = 0; i < 3; i++) {
-                    const template = agencyTemplates[Math.floor(Math.random() * agencyTemplates.length)];
-                    const now = new Date();
-                    const articleTime = new Date(now.getTime() - (i * 2 * 60 * 60 * 1000)); // 2시간 간격
-                    
-                    const title = `${template} - ${articleTime.getMonth() + 1}월 ${articleTime.getDate()}일`;
-                    
-                    // 중복 제거
-                    if (!existingTitles.has(title)) {
-                        governmentNews[agencyCode].unshift({
-                            id: `gov_${agencyCode}_${Date.now()}_${i}`,
-                            title: title,
-                            summary: `${agencies[agencyCode]}에서 발표한 ${template}에 대한 상세 내용입니다. 정책 방향과 실행 계획을 포함합니다.`,
-                            agency: agencies[agencyCode],
-                            agencyCode: agencyCode,
-                            url: `#government-${agencyCode}-${Date.now()}`,
-                            timestamp: articleTime.getTime(),
-                            date: formatDate(articleTime)
-                        });
-                    }
-                }
-                
-                // 최대 30개까지만 유지 (오래된 것 제거)
-                if (governmentNews[agencyCode].length > 30) {
-                    governmentNews[agencyCode] = governmentNews[agencyCode].slice(0, 30);
-                }
-            });
-            
-            saveData();
-        }
-        
-        // 정부 보도자료 표시
-        function displayGovernmentNews() {
-            const newsList = document.getElementById('government-news-list');
-            let allNews = [];
-            
-            // 선택된 기관에 따라 데이터 필터링
-            if (currentAgency === 'all') {
-                allNews = [
-                    ...governmentNews.fsc,
-                    ...governmentNews.fss,
-                    ...governmentNews.ftc
-                ];
-            } else {
-                allNews = governmentNews[currentAgency] || [];
             }
+        }
+        
+
+        
+        // 정부 보도자료 표시 (API 기반)
+        async function displayGovernmentNews() {
+            const newsList = document.getElementById('government-news-list');
             
-            // 최신순 정렬
-            allNews.sort((a, b) => b.timestamp - a.timestamp);
-            
-            // 통계 업데이트
-            updateGovernmentStats(allNews);
-            
-            if (allNews.length === 0) {
+            try {
+                // 로딩 표시
                 newsList.innerHTML = `
                     <div class="welcome-message">
-                        <h3>📋 보도자료 없음</h3>
-                        <p>선택한 기관의 보도자료가 없습니다. 새로고침을 시도해주세요.</p>
+                        <h3>🔄 데이터를 불러오는 중...</h3>
+                        <p>잠시만 기다려주세요.</p>
                     </div>
                 `;
-                document.getElementById('government-pagination').style.display = 'none';
-                return;
-            }
-            
-            // 페이지네이션 적용
-            const totalPages = Math.ceil(allNews.length / governmentArticlesPerPage);
-            const startIndex = (currentGovernmentPage - 1) * governmentArticlesPerPage;
-            const endIndex = startIndex + governmentArticlesPerPage;
-            const pageNews = allNews.slice(startIndex, endIndex);
-            
-            // 뉴스 카드 생성
-            const newsCards = pageNews.map(item => `
-                <div class="news-card">
-                    <div class="news-header">
-                        <span class="news-source">${item.agency}</span>
-                        <span class="news-date">${item.date}</span>
+                
+                // API에서 뉴스 데이터 가져오기
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=${currentAgency}&page=${currentGovernmentPage}&limit=${governmentArticlesPerPage}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '데이터를 불러올 수 없습니다.');
+                }
+                
+                const newsData = result.data || [];
+                const pagination = result.pagination || {};
+                
+                // 통계 업데이트
+                await updateGovernmentStats();
+                
+                if (newsData.length === 0) {
+                    newsList.innerHTML = `
+                        <div class="welcome-message">
+                            <h3>📋 보도자료 없음</h3>
+                            <p>선택한 기관의 보도자료가 없습니다. 새로고침을 시도해주세요.</p>
+                        </div>
+                    `;
+                    document.getElementById('government-pagination').style.display = 'none';
+                    return;
+                }
+                
+                // 뉴스 카드 생성
+                const newsCards = newsData.map(item => `
+                    <div class="news-card">
+                        <div class="news-header">
+                            <span class="news-source">${item.agency}</span>
+                            <span class="news-date">${item.date}</span>
+                        </div>
+                        <h4 class="news-title">${item.title}</h4>
+                        <p class="news-summary">${item.summary}</p>
+                        <div class="news-footer">
+                            <a href="${item.url}" class="news-link" target="_blank">원문 보기</a>
+                            <button class="save-btn" onclick="saveGovernmentArticle(${item.id}, '${item.agencyCode}')" title="저장">
+                                💾
+                            </button>
+                        </div>
                     </div>
-                    <h4 class="news-title">${item.title}</h4>
-                    <p class="news-summary">${item.summary}</p>
-                    <div class="news-footer">
-                        <a href="${item.url}" class="news-link" target="_blank">원문 보기</a>
-                        <button class="save-btn" onclick="saveGovernmentArticle('${item.id}')" title="저장">
-                            💾
-                        </button>
+                `).join('');
+                
+                newsList.innerHTML = `<div class="news-grid">${newsCards}</div>`;
+                
+                // 페이지네이션 표시
+                if (pagination.totalPages > 1) {
+                    updateGovernmentPagination(pagination.totalPages, pagination.totalCount);
+                    document.getElementById('government-pagination').style.display = 'block';
+                } else {
+                    document.getElementById('government-pagination').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('정부 뉴스 로딩 오류:', error);
+                newsList.innerHTML = `
+                    <div class="welcome-message">
+                        <h3>❌ 오류가 발생했습니다</h3>
+                        <p>${error.message}</p>
+                        <button class="btn" onclick="displayGovernmentNews()">다시 시도</button>
                     </div>
-                </div>
-            `).join('');
-            
-            newsList.innerHTML = `<div class="news-grid">${newsCards}</div>`;
-            
-            // 페이지네이션 표시
-            if (totalPages > 1) {
-                updateGovernmentPagination(totalPages, allNews.length);
-                document.getElementById('government-pagination').style.display = 'block';
-            } else {
-                document.getElementById('government-pagination').style.display = 'none';
+                `;
             }
         }
         
-        // 정부 보도자료 통계 업데이트
-        function updateGovernmentStats(allNews) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            
-            const todayCount = allNews.filter(item => {
-                const itemDate = new Date(item.timestamp);
-                return itemDate >= today;
-            }).length;
-            
-            const weekCount = allNews.filter(item => {
-                const itemDate = new Date(item.timestamp);
-                return itemDate >= weekAgo;
-            }).length;
-            
-            document.getElementById('totalCount').textContent = allNews.length;
-            document.getElementById('todayCount').textContent = todayCount;
-            document.getElementById('weekCount').textContent = weekCount;
+        // 정부 보도자료 통계 업데이트 (API 기반)
+        async function updateGovernmentStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/news/stats`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const stats = result.data;
+                    document.getElementById('totalCount').textContent = stats.total || 0;
+                    document.getElementById('todayCount').textContent = stats.today || 0;
+                    document.getElementById('weekCount').textContent = stats.thisWeek || 0;
+                } else {
+                    throw new Error(result.error || '통계를 불러올 수 없습니다.');
+                }
+                
+            } catch (error) {
+                console.error('통계 업데이트 오류:', error);
+                // 오류 시 기본값 표시
+                document.getElementById('totalCount').textContent = '-';
+                document.getElementById('todayCount').textContent = '-';
+                document.getElementById('weekCount').textContent = '-';
+            }
         }
         
         // 정부 보도자료 페이지네이션 업데이트
@@ -1881,13 +1840,8 @@
         
         // 정부 보도자료 페이지 변경
         function changeGovernmentPage(direction) {
-            const allNews = currentAgency === 'all' 
-                ? [...governmentNews.fsc, ...governmentNews.fss, ...governmentNews.ftc]
-                : (governmentNews[currentAgency] || []);
-            const totalPages = Math.ceil(allNews.length / governmentArticlesPerPage);
-            
             const newPage = currentGovernmentPage + direction;
-            if (newPage >= 1 && newPage <= totalPages) {
+            if (newPage >= 1) {
                 goToGovernmentPage(newPage);
             }
         }
@@ -1904,29 +1858,45 @@
             });
         }
         
-        // 정부 보도자료 저장
-        function saveGovernmentArticle(articleId) {
-            // 모든 정부 기관 뉴스에서 해당 기사 찾기
-            let article = null;
-            ['fsc', 'fss', 'ftc'].forEach(agency => {
-                const found = governmentNews[agency].find(item => item.id === articleId);
-                if (found) article = found;
-            });
-            
-            if (!article) return;
-            
-            // savedArticles에 추가 (중복 확인)
-            const existingIndex = savedArticles.findIndex(item => item.id === articleId);
-            if (existingIndex === -1) {
-                savedArticles.push({
-                    ...article,
-                    keyword: `[${article.agency}]`,
-                    savedAt: new Date().getTime()
-                });
-                saveData();
-                alert('보도자료가 저장되었습니다!');
-            } else {
-                alert('이미 저장된 보도자료입니다.');
+        // 정부 보도자료 저장 (API 기반)
+        async function saveGovernmentArticle(articleId, agencyCode) {
+            try {
+                // API에서 해당 기사 정보 가져오기
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=${agencyCode}&limit=100`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error('기사 정보를 불러올 수 없습니다.');
+                }
+                
+                const article = result.data.find(item => item.id === articleId);
+                if (!article) {
+                    alert('기사를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                // savedArticles에 추가 (중복 확인)
+                const existingIndex = savedArticles.findIndex(item => item.id === `gov_${articleId}`);
+                if (existingIndex === -1) {
+                    savedArticles.push({
+                        id: `gov_${articleId}`,
+                        title: article.title,
+                        summary: article.summary,
+                        url: article.url,
+                        source: article.agency,
+                        keyword: `[${article.agency}]`,
+                        savedAt: new Date().getTime(),
+                        timestamp: new Date(article.publishedAt).getTime()
+                    });
+                    saveData();
+                    alert('보도자료가 저장되었습니다!');
+                } else {
+                    alert('이미 저장된 보도자료입니다.');
+                }
+                
+            } catch (error) {
+                console.error('저장 오류:', error);
+                alert('저장 중 오류가 발생했습니다: ' + error.message);
             }
         }
         
@@ -1937,14 +1907,10 @@
             document.getElementById('lastUpdateTime').textContent = timeString;
         }
 
-        // 정부 탭 초기화
-        function initGovernmentTab() {
-            // 초기 데모 데이터가 없으면 생성
-            if (Object.values(governmentNews).every(arr => arr.length === 0)) {
-                generateGovernmentDemoData();
-            }
+        // 정부 탭 초기화 (API 기반)
+        async function initGovernmentTab() {
             updateLastUpdateTime();
-            displayGovernmentNews();
+            await displayGovernmentNews();
         }
     </script>
 </body>
