@@ -183,10 +183,26 @@ function generateDemoNewsData(agency) {
         const now = new Date();
         const publishedAt = new Date(now.getTime() - (i * 4 + Math.random() * 4) * 60 * 60 * 1000);
         
+        // 실제 정부 기관 보도자료 페이지 URL 생성
+        let realUrl;
+        switch (agency.code) {
+            case 'fsc':
+                realUrl = 'https://www.fsc.go.kr/no010101'; // 금융위원회 보도자료 페이지
+                break;
+            case 'fss':
+                realUrl = 'https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218'; // 금융감독원 보도자료 페이지
+                break;
+            case 'ftc':
+                realUrl = 'https://www.ftc.go.kr/www/selectReportList.do?key=10'; // 공정거래위원회 보도자료 페이지
+                break;
+            default:
+                realUrl = agency.baseUrl;
+        }
+        
         news.push({
             title: `${template} - ${publishedAt.getMonth() + 1}월 ${publishedAt.getDate()}일`,
             summary: `${agency.name}에서 "${template}"에 대한 상세 정책 방향과 실행 계획을 발표했습니다. 관련 업계와 국민들의 높은 관심이 예상됩니다.`,
-            url: `${agency.baseUrl}/news/${Date.now()}-${i}`,
+            url: realUrl,
             publishedAt: publishedAt
         });
     }

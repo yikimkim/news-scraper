@@ -719,6 +719,140 @@
         .refreshing {
             animation: spin 1s linear infinite;
         }
+
+        /* 정부 보도자료 가로형 레이아웃 */
+        .government-news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .government-news-card {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .government-news-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .government-news-card .news-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .government-news-card .news-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .government-news-card .news-source {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .government-news-card .news-date {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .government-news-card .news-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+            margin: 0 0 8px 0;
+        }
+
+        .government-news-card .news-summary {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0 0 15px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .government-news-card .news-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .government-news-card .news-link {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .government-news-card .news-link:hover {
+            color: #1976D2;
+            text-decoration: underline;
+        }
+
+        .government-news-card .save-btn {
+            position: static;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .government-news-card .save-btn:hover {
+            background: #2196F3;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .government-news-card .save-btn.saved {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* 반응형 디자인 - 모바일에서는 세로형으로 변경 */
+        @media (max-width: 768px) {
+            .government-news-card {
+                flex-direction: column;
+                min-height: auto;
+            }
+            
+            .government-news-card .news-content {
+                padding: 15px;
+            }
+            
+            .government-news-card .news-summary {
+                -webkit-line-clamp: 3;
+            }
+        }
         }
     </style>
 </head>
@@ -1492,95 +1626,109 @@
 
         // 데모 뉴스 생성 (총 60개 - 10페이지 x 6개)
         function generateDemoNews(keyword, source) {
-            const newsTemplates = [
-                {
-                    titleTemplate: `${keyword} 관련 최신 뉴스 - 혁신적인 발전 이어져`,
-                    descTemplate: `${keyword}에 대한 최신 동향과 전문가들의 분석을 통해 미래 전망을 살펴봅니다.`,
-                    sourceType: '종합 뉴스',
-                    urlQuery: keyword + ' 뉴스',
-                    imageText: 'Breaking+News'
-                },
-                {
-                    titleTemplate: `${keyword} 산업 동향 - 새로운 변화의 물결`,
-                    descTemplate: `${keyword} 분야의 주요 변화와 이에 따른 시장 반응을 자세히 알아봅니다.`,
-                    sourceType: '경제 뉴스',
-                    urlQuery: keyword + ' 산업',
-                    imageText: 'Industry+News'
-                },
-                {
-                    titleTemplate: `전문가 분석: ${keyword}의 미래 전망`,
-                    descTemplate: `업계 전문가들이 바라본 ${keyword}의 향후 발전 방향과 주요 이슈들을 정리했습니다.`,
-                    sourceType: '전문 뉴스',
-                    urlQuery: keyword + ' 전문가',
-                    imageText: 'Expert+Analysis'
-                },
-                {
-                    titleTemplate: `${keyword} 관련 정책 변화 및 대응 방안`,
-                    descTemplate: `최근 ${keyword} 관련 정책 변화와 이에 대한 각계의 반응을 종합적으로 살펴봅니다.`,
-                    sourceType: '정책 뉴스',
-                    urlQuery: keyword + ' 정책',
-                    imageText: 'Policy+News'
-                },
-                {
-                    titleTemplate: `${keyword} 기술 형신이 가져올 변화`,
-                    descTemplate: `최신 ${keyword} 기술의 혁신적 응용 사례와 향후 개발 방향을 살펴봅니다.`,
-                    sourceType: '기술 뉴스',
-                    urlQuery: keyword + ' 기술',
-                    imageText: 'Technology+News'
-                },
-                {
-                    titleTemplate: `${keyword} 시장 전망과 투자 기회`,
-                    descTemplate: `${keyword} 관련 시장의 성장 가능성과 투자자들이 주목할 점들을 분석합니다.`,
-                    sourceType: '투자 뉴스',
-                    urlQuery: keyword + ' 투자',
-                    imageText: 'Investment+News'
-                },
-                {
-                    titleTemplate: `${keyword} 관련 규제 변화와 영향`,
-                    descTemplate: `${keyword} 산업에 영향을 미칠 수 있는 새로운 규제 사항들을 정리했습니다.`,
-                    sourceType: '규제 뉴스',
-                    urlQuery: keyword + ' 규제',
-                    imageText: 'Regulation+News'
-                },
-                {
-                    titleTemplate: `${keyword} 연구개발 성과와 전망`,
-                    descTemplate: `국내외 ${keyword} R&D 현황과 주요 연구 성과들을 종합적으로 정리하여 소개합니다.`,
-                    sourceType: 'R&D 뉴스',
-                    urlQuery: keyword + ' 연구',
-                    imageText: 'Research+News'
-                },
-                {
-                    titleTemplate: `${keyword} 글로벌 동향과 한국의 위치`,
-                    descTemplate: `전 세계 ${keyword} 트렌드와 한국의 경쟁력을 비교 분석한 보고서입니다.`,
-                    sourceType: '국제 뉴스',
-                    urlQuery: keyword + ' 글로벌',
-                    imageText: 'Global+News'
-                },
-                {
-                    titleTemplate: `${keyword} 스타트업 생태계 분석`,
-                    descTemplate: `${keyword} 분야의 주요 스타트업들과 대기업 동향을 통해 산업 생태계를 살펴봅니다.`,
-                    sourceType: '스타트업 뉴스',
-                    urlQuery: keyword + ' 스타트업',
-                    imageText: 'Startup+News'
-                }
+            // 더욱 다양한 뉴스 템플릿 생성
+            const titleVariations = [
+                `${keyword} 관련 최신 뉴스`,
+                `${keyword} 산업 동향 분석`,
+                `${keyword} 전문가 의견`,
+                `${keyword} 정책 변화 소식`,
+                `${keyword} 기술 혁신 현황`,
+                `${keyword} 시장 전망`,
+                `${keyword} 규제 동향`,
+                `${keyword} 연구 성과`,
+                `${keyword} 글로벌 현황`,
+                `${keyword} 투자 동향`,
+                `${keyword} 트렌드 분석`,
+                `${keyword} 업계 현황`,
+                `${keyword} 정부 발표`,
+                `${keyword} 기업 동향`,
+                `${keyword} 소비자 반응`,
+                `${keyword} 미래 전망`,
+                `${keyword} 경쟁 현황`,
+                `${keyword} 협력 방안`,
+                `${keyword} 성장 가능성`,
+                `${keyword} 위험 요소`
             ];
+
+            const suffixes = [
+                '혁신적인 변화 예상',
+                '주목할 만한 성과',
+                '새로운 도전과 기회',
+                '전망과 과제',
+                '주요 이슈 정리',
+                '심층 분석',
+                '최신 동향',
+                '업계 반응',
+                '전문가 진단',
+                '미래 전략',
+                '현황과 대응',
+                '발전 방향',
+                '변화의 바람',
+                '성장 동력',
+                '핵심 포인트',
+                '브레이킹 뉴스',
+                '긴급 속보',
+                '독점 보도',
+                '특별 취재',
+                '심화 분석'
+            ];
+
+            const newsTopics = [
+                '혁신', '발전', '성장', '변화', '전략', '정책', '기술', '투자', 
+                '협력', '경쟁', '규제', '개발', '연구', '시장', '트렌드', 
+                '미래', '도전', '기회', '위험', '대응'
+            ];
+
+            const sourceTypes = ['연합뉴스', 'KBS', 'MBC', 'SBS', '조선일보', '중앙일보', 
+                               '동아일보', '한겨레', '경향신문', '매일경제', '한국경제', 
+                               '서울경제', 'IT조선', '전자신문', '디지털타임스'];
 
             const demoArticles = [];
             const currentTime = new Date().getTime();
             
-            // 60개 기사 생성 (10페이지 x 6개)
+            // 60개의 고유한 기사 생성
             for (let i = 0; i < 60; i++) {
-                const template = newsTemplates[i % newsTemplates.length];
-                const articleTime = currentTime - (i * 30 * 60 * 1000); // 30분씩 차이
-                const variation = Math.floor(i / newsTemplates.length) + 1;
+                const titleBase = titleVariations[i % titleVariations.length];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                const topic = newsTopics[Math.floor(Math.random() * newsTopics.length)];
+                const sourceType = sourceTypes[i % sourceTypes.length];
+                
+                // 시간 간격을 더 다양하게 (15분~2시간 사이)
+                const timeOffset = i * (15 + Math.random() * 105) * 60 * 1000;
+                const articleTime = currentTime - timeOffset;
+                
+                // 고유한 제목 생성
+                const uniqueId = Math.random().toString(36).substr(2, 9);
+                const title = `${titleBase} - ${suffix}`;
+                
+                // 다양한 설명 생성
+                const descriptions = [
+                    `${keyword} 분야의 ${topic}에 대한 전문가들의 심층 분석과 향후 전망을 다뤄봅니다.`,
+                    `최근 ${keyword} 관련 ${topic} 동향과 이에 따른 업계의 대응 방안을 살펴봅니다.`,
+                    `${keyword} 산업에서 주목받고 있는 ${topic} 이슈와 그 영향력을 종합 보도합니다.`,
+                    `${keyword} 분야 전문가들이 제시하는 ${topic} 전략과 실행 방안을 정리했습니다.`,
+                    `${keyword} 관련 ${topic} 변화가 시장과 소비자에게 미치는 영향을 분석합니다.`
+                ];
+                
+                const description = descriptions[i % descriptions.length];
+                
+                // 실제 뉴스 사이트 URL 생성
+                const realNewsUrls = [
+                    `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword + ' ' + topic)}`,
+                    `https://search.daum.net/search?w=news&q=${encodeURIComponent(keyword + ' ' + topic)}`,
+                    `https://www.google.com/search?q=${encodeURIComponent(keyword + ' ' + topic)}&tbm=nws`,
+                ];
+                
+                const url = realNewsUrls[i % realNewsUrls.length];
                 
                 demoArticles.push({
-                    title: variation > 1 ? `${template.titleTemplate} (${variation})` : template.titleTemplate,
-                    description: template.descTemplate,
-                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(template.urlQuery)}&where=news`,
-                    source: source === 'all' ? template.sourceType : getSourceName(source),
+                    id: `demo_${uniqueId}`,
+                    title: title,
+                    description: description,
+                    url: url,
+                    source: source === 'all' ? sourceType : getSourceName(source),
                     publishedAt: new Date(articleTime).toLocaleString('ko-KR'),
-                    imageUrl: `https://via.placeholder.com/300x200?text=${template.imageText}`,
+                    imageUrl: `https://via.placeholder.com/300x200/2196F3/ffffff?text=${encodeURIComponent(keyword)}`,
                     timestamp: articleTime
                 });
             }
@@ -1640,7 +1788,7 @@
         
         // API 설정
         const API_BASE_URL = window.location.hostname.includes('sandbox') || window.location.hostname.includes('localhost') 
-            ? `${window.location.protocol}//${window.location.hostname.replace('8000-', '3001-')}`
+            ? `${window.location.protocol}//${window.location.hostname.replace('8000-', '3002-')}`
             : '/api'; // 프로덕션에서는 상대 경로
         
         let currentAgency = 'all';
@@ -1751,25 +1899,27 @@
                     return;
                 }
                 
-                // 뉴스 카드 생성
+                // 뉴스 카드 생성 (가로형 레이아웃)
                 const newsCards = newsData.map(item => `
-                    <div class="news-card">
-                        <div class="news-header">
-                            <span class="news-source">${item.agency}</span>
-                            <span class="news-date">${item.date}</span>
-                        </div>
-                        <h4 class="news-title">${item.title}</h4>
-                        <p class="news-summary">${item.summary}</p>
-                        <div class="news-footer">
-                            <a href="${item.url}" class="news-link" target="_blank">원문 보기</a>
-                            <button class="save-btn" onclick="saveGovernmentArticle(${item.id}, '${item.agencyCode}')" title="저장">
-                                💾
-                            </button>
+                    <div class="government-news-card">
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="news-source">${item.agency}</span>
+                                <span class="news-date">${item.date}</span>
+                            </div>
+                            <h4 class="news-title">${item.title}</h4>
+                            <p class="news-summary">${item.summary}</p>
+                            <div class="news-footer">
+                                <a href="${item.url}" class="news-link" target="_blank" rel="noopener noreferrer">📖 원문 보기</a>
+                                <button class="save-btn" onclick="saveGovernmentArticle(${item.id}, '${item.agencyCode}')" title="저장">
+                                    💾
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
                 
-                newsList.innerHTML = `<div class="news-grid">${newsCards}</div>`;
+                newsList.innerHTML = `<div class="government-news-list">${newsCards}</div>`;
                 
                 // 페이지네이션 표시
                 if (pagination.totalPages > 1) {
