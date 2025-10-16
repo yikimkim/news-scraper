@@ -149,6 +149,10 @@
             background: linear-gradient(45deg, #4CAF50, #66BB6A);
         }
 
+        .btn-success:hover {
+            background: linear-gradient(45deg, #388E3C, #4CAF50);
+        }
+
         .btn-danger {
             background: linear-gradient(45deg, #f44336, #ef5350);
         }
@@ -365,6 +369,15 @@
             color: #666;
         }
 
+        /* 키워드 입력 섹션 */
+        .keyword-input-section {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             .search-form {
@@ -389,6 +402,16 @@
 
             .keyword-list {
                 justify-content: center;
+            }
+
+            .keyword-input-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .keyword-input-section .btn {
+                align-self: stretch !important;
+                margin-top: 10px;
             }
         }
     </style>
@@ -463,9 +486,12 @@
                 <h3>⚙️ 키워드 관리</h3>
                 <p>새로운 키워드를 추가하거나 기존 키워드를 삭제할 수 있습니다.</p>
                 
-                <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
-                    <input type="text" id="newKeyword" placeholder="새 키워드 입력" style="flex: 1; min-width: 200px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
-                    <button type="button" class="btn btn-success" onclick="addKeyword()">➕ 추가</button>
+                <div class="keyword-input-section">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="newKeyword">새 키워드</label>
+                        <input type="text" id="newKeyword" placeholder="예: AI, 경제, 스포츠">
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="addKeyword()" style="align-self: flex-end;">➕ 추가</button>
                 </div>
 
                 <div class="keyword-list" id="manageKeywordList">
@@ -816,7 +842,7 @@
                 {
                     title: `${keyword} 관련 최신 뉴스 - 혁신적인 발전 이어져`,
                     description: `${keyword}에 대한 최신 동향과 전문가들의 분석을 통해 미래 전망을 살펴봅니다.`,
-                    url: '#',
+                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(keyword + ' 뉴스')}`,
                     source: source === 'all' ? '종합 뉴스' : getSourceName(source),
                     publishedAt: new Date().toLocaleString('ko-KR'),
                     imageUrl: 'https://via.placeholder.com/300x200?text=News+Image'
@@ -824,7 +850,7 @@
                 {
                     title: `${keyword} 산업 동향 - 새로운 변화의 물결`,
                     description: `${keyword} 분야의 주요 변화와 이에 따른 시장 반응을 자세히 알아봅니다.`,
-                    url: '#',
+                    url: `https://search.daum.net/search?q=${encodeURIComponent(keyword + ' 산업 동향')}`,
                     source: source === 'all' ? '경제 뉴스' : getSourceName(source),
                     publishedAt: new Date(Date.now() - 3600000).toLocaleString('ko-KR'),
                     imageUrl: 'https://via.placeholder.com/300x200?text=Industry+News'
@@ -832,7 +858,7 @@
                 {
                     title: `전문가 분석: ${keyword}의 미래 전망`,
                     description: `업계 전문가들이 바라본 ${keyword}의 향후 발전 방향과 주요 이슈들을 정리했습니다.`,
-                    url: '#',
+                    url: `https://www.google.com/search?q=${encodeURIComponent(keyword + ' 전문가 분석')}&tbm=nws`,
                     source: source === 'all' ? '전문 뉴스' : getSourceName(source),
                     publishedAt: new Date(Date.now() - 7200000).toLocaleString('ko-KR'),
                     imageUrl: 'https://via.placeholder.com/300x200?text=Expert+Analysis'
@@ -840,7 +866,7 @@
                 {
                     title: `${keyword} 관련 정책 변화 및 대응 방안`,
                     description: `최근 ${keyword} 관련 정책 변화와 이에 대한 각계의 반응을 종합적으로 살펴봅니다.`,
-                    url: '#',
+                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(keyword + ' 정책')}&where=news`,
                     source: source === 'all' ? '정책 뉴스' : getSourceName(source),
                     publishedAt: new Date(Date.now() - 10800000).toLocaleString('ko-KR'),
                     imageUrl: 'https://via.placeholder.com/300x200?text=Policy+News'
