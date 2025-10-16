@@ -489,6 +489,60 @@
             margin-top: 5px;
         }
 
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #666;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pagination-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+            background: #f5f5f5;
+        }
+
+        .pagination-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+
+        .pagination-btn:disabled:hover {
+            border-color: #e0e0e0;
+            color: #666;
+            background: #f5f5f5;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+            margin: 0 15px;
+        }
+
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             .search-form {
@@ -679,7 +733,13 @@
         let currentKeyword = null;
         let keywords = JSON.parse(localStorage.getItem('newsKeywords')) || [];
         let savedArticles = JSON.parse(localStorage.getItem('savedArticles')) || {};
-        let fixedKeywords = JSON.parse(localStorage.getItem('fixedKeywords')) || ['AI', '경제', '정치', '기술', '스포츠'];
+        let fixedKeywords = JSON.parse(localStorage.getItem('fixedKeywords')) || ['AI', '경제', '정치', '기술', '스포츠', '건강', '문화', '연예', '게임', '자동차'];
+        
+        // 페이지네이션 변수
+        let currentPage = 1;
+        let totalPages = 10;
+        let articlesPerPage = 6;
+        let allArticles = [];
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -1077,7 +1137,7 @@
             }
         }
 
-        // 검색 결과 표시 (저장 기능 포함)
+        // 검색 결과 표시 (페이지네이션 포함)
         function displaySearchNews(articles, searchKeyword) {
             const results = document.getElementById('search-results');
             
@@ -1086,21 +1146,43 @@
                 return;
             }
             
+            // 전체 기사 저장 및 페이지 초기화
+            allArticles = articles;
+            currentPage = 1;
+            totalPages = Math.ceil(articles.length / articlesPerPage);
+            
+            // 검색 결과 헤더 생성
             results.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     <h3>🔍 "${searchKeyword}" 검색 결과</h3>
-                    <div style="color: #666; font-size: 0.9rem;">${articles.length}개의 기사를 찾았습니다</div>
+                    <div style="color: #666; font-size: 0.9rem;">총 ${articles.length}개 기사 (${totalPages}페이지)</div>
                 </div>
                 <div class="news-grid" id="searchNewsGrid"></div>
+                <div class="pagination" id="pagination"></div>
             `;
             
+            // 처음 페이지 표시
+            displayPage(searchKeyword, 1);
+        }
+        
+        // 페이지 표시 기능
+        function displayPage(searchKeyword, page) {
+            currentPage = page;
+            const startIndex = (page - 1) * articlesPerPage;
+            const endIndex = startIndex + articlesPerPage;
+            const pageArticles = allArticles.slice(startIndex, endIndex);
+            
             const newsGrid = document.getElementById('searchNewsGrid');
-            articles.forEach((article, index) => {
+            newsGrid.innerHTML = '';
+            
+            // 현재 페이지 기사 표시
+            pageArticles.forEach((article, index) => {
+                const globalIndex = startIndex + index;
                 const newsCard = document.createElement('div');
                 newsCard.className = 'news-card';
                 
                 newsCard.innerHTML = `
-                    <button class="save-btn" onclick="saveArticle(${index}, '${searchKeyword}')" title="기사 저장">
+                    <button class="save-btn" onclick="saveArticle(${globalIndex}, '${searchKeyword}')" title="기사 저장">
                         💾
                     </button>
                     <img src="${article.imageUrl}" alt="뉴스 이미지" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
@@ -1118,13 +1200,67 @@
                 newsGrid.appendChild(newsCard);
             });
             
+            // 페이지네이션 업데이트
+            updatePagination(searchKeyword);
+            
             // 검색된 기사들을 전역 변수에 저장
-            window.currentSearchResults = articles;
+            window.currentSearchResults = allArticles;
+        }
+        
+        // 페이지네이션 UI 업데이트
+        function updatePagination(searchKeyword) {
+            const pagination = document.getElementById('pagination');
+            let paginationHTML = '';
+            
+            // 이전 버튼
+            paginationHTML += `<button class="pagination-btn" onclick="goToPage('${searchKeyword}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ 이전</button>`;
+            
+            // 페이지 번호들
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) {
+                paginationHTML += `<button class="pagination-btn" onclick="goToPage('${searchKeyword}', 1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage('${searchKeyword}', ${i})">${i}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+                paginationHTML += `<button class="pagination-btn" onclick="goToPage('${searchKeyword}', ${totalPages})">${totalPages}</button>`;
+            }
+            
+            // 다음 버튼
+            paginationHTML += `<button class="pagination-btn" onclick="goToPage('${searchKeyword}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>다음 ›</button>`;
+            
+            // 페이지 정보
+            paginationHTML += `<span class="pagination-info">${currentPage} / ${totalPages} 페이지</span>`;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+        
+        // 페이지 이동 기능
+        function goToPage(searchKeyword, page) {
+            if (page < 1 || page > totalPages || page === currentPage) {
+                return;
+            }
+            displayPage(searchKeyword, page);
+            
+            // 뉴스 결과 영역으로 스크롤
+            const searchResults = document.getElementById('search-results');
+            searchResults.scrollIntoView({ behavior: 'smooth' });
         }
 
         // 기사 저장
         function saveArticle(index, searchKeyword) {
-            const article = window.currentSearchResults[index];
+            const article = allArticles[index];
             
             // 키워드가 없으면 자동으로 추가
             if (!keywords.includes(searchKeyword)) {
@@ -1157,44 +1293,103 @@
             alert('기사가 저장되었습니다!');
         }
 
-        // 데모 뉴스 생성
+        // 데모 뉴스 생성 (총 60개 - 10페이지 x 6개)
         function generateDemoNews(keyword, source) {
-            const demoArticles = [
+            const newsTemplates = [
                 {
-                    title: `${keyword} 관련 최신 뉴스 - 혁신적인 발전 이어져`,
-                    description: `${keyword}에 대한 최신 동향과 전문가들의 분석을 통해 미래 전망을 살펴봅니다.`,
-                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(keyword + ' 뉴스')}`,
-                    source: source === 'all' ? '종합 뉴스' : getSourceName(source),
-                    publishedAt: new Date().toLocaleString('ko-KR'),
-                    imageUrl: 'https://via.placeholder.com/300x200?text=News+Image'
+                    titleTemplate: `${keyword} 관련 최신 뉴스 - 혁신적인 발전 이어져`,
+                    descTemplate: `${keyword}에 대한 최신 동향과 전문가들의 분석을 통해 미래 전망을 살펴봅니다.`,
+                    sourceType: '종합 뉴스',
+                    urlQuery: keyword + ' 뉴스',
+                    imageText: 'Breaking+News'
                 },
                 {
-                    title: `${keyword} 산업 동향 - 새로운 변화의 물결`,
-                    description: `${keyword} 분야의 주요 변화와 이에 따른 시장 반응을 자세히 알아봅니다.`,
-                    url: `https://search.daum.net/search?q=${encodeURIComponent(keyword + ' 산업 동향')}`,
-                    source: source === 'all' ? '경제 뉴스' : getSourceName(source),
-                    publishedAt: new Date(Date.now() - 3600000).toLocaleString('ko-KR'),
-                    imageUrl: 'https://via.placeholder.com/300x200?text=Industry+News'
+                    titleTemplate: `${keyword} 산업 동향 - 새로운 변화의 물결`,
+                    descTemplate: `${keyword} 분야의 주요 변화와 이에 따른 시장 반응을 자세히 알아봅니다.`,
+                    sourceType: '경제 뉴스',
+                    urlQuery: keyword + ' 산업',
+                    imageText: 'Industry+News'
                 },
                 {
-                    title: `전문가 분석: ${keyword}의 미래 전망`,
-                    description: `업계 전문가들이 바라본 ${keyword}의 향후 발전 방향과 주요 이슈들을 정리했습니다.`,
-                    url: `https://www.google.com/search?q=${encodeURIComponent(keyword + ' 전문가 분석')}&tbm=nws`,
-                    source: source === 'all' ? '전문 뉴스' : getSourceName(source),
-                    publishedAt: new Date(Date.now() - 7200000).toLocaleString('ko-KR'),
-                    imageUrl: 'https://via.placeholder.com/300x200?text=Expert+Analysis'
+                    titleTemplate: `전문가 분석: ${keyword}의 미래 전망`,
+                    descTemplate: `업계 전문가들이 바라본 ${keyword}의 향후 발전 방향과 주요 이슈들을 정리했습니다.`,
+                    sourceType: '전문 뉴스',
+                    urlQuery: keyword + ' 전문가',
+                    imageText: 'Expert+Analysis'
                 },
                 {
-                    title: `${keyword} 관련 정책 변화 및 대응 방안`,
-                    description: `최근 ${keyword} 관련 정책 변화와 이에 대한 각계의 반응을 종합적으로 살펴봅니다.`,
-                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(keyword + ' 정책')}&where=news`,
-                    source: source === 'all' ? '정책 뉴스' : getSourceName(source),
-                    publishedAt: new Date(Date.now() - 10800000).toLocaleString('ko-KR'),
-                    imageUrl: 'https://via.placeholder.com/300x200?text=Policy+News'
+                    titleTemplate: `${keyword} 관련 정책 변화 및 대응 방안`,
+                    descTemplate: `최근 ${keyword} 관련 정책 변화와 이에 대한 각계의 반응을 종합적으로 살펴봅니다.`,
+                    sourceType: '정책 뉴스',
+                    urlQuery: keyword + ' 정책',
+                    imageText: 'Policy+News'
+                },
+                {
+                    titleTemplate: `${keyword} 기술 형신이 가져올 변화`,
+                    descTemplate: `최신 ${keyword} 기술의 혁신적 응용 사례와 향후 개발 방향을 살펴봅니다.`,
+                    sourceType: '기술 뉴스',
+                    urlQuery: keyword + ' 기술',
+                    imageText: 'Technology+News'
+                },
+                {
+                    titleTemplate: `${keyword} 시장 전망과 투자 기회`,
+                    descTemplate: `${keyword} 관련 시장의 성장 가능성과 투자자들이 주목할 점들을 분석합니다.`,
+                    sourceType: '투자 뉴스',
+                    urlQuery: keyword + ' 투자',
+                    imageText: 'Investment+News'
+                },
+                {
+                    titleTemplate: `${keyword} 관련 규제 변화와 영향`,
+                    descTemplate: `${keyword} 산업에 영향을 미칠 수 있는 새로운 규제 사항들을 정리했습니다.`,
+                    sourceType: '규제 뉴스',
+                    urlQuery: keyword + ' 규제',
+                    imageText: 'Regulation+News'
+                },
+                {
+                    titleTemplate: `${keyword} 연구개발 성과와 전망`,
+                    descTemplate: `국내외 ${keyword} R&D 현황과 주요 연구 성과들을 종합적으로 정리하여 소개합니다.`,
+                    sourceType: 'R&D 뉴스',
+                    urlQuery: keyword + ' 연구',
+                    imageText: 'Research+News'
+                },
+                {
+                    titleTemplate: `${keyword} 글로벌 동향과 한국의 위치`,
+                    descTemplate: `전 세계 ${keyword} 트렌드와 한국의 경쟁력을 비교 분석한 보고서입니다.`,
+                    sourceType: '국제 뉴스',
+                    urlQuery: keyword + ' 글로벌',
+                    imageText: 'Global+News'
+                },
+                {
+                    titleTemplate: `${keyword} 스타트업 생태계 분석`,
+                    descTemplate: `${keyword} 분야의 주요 스타트업들과 대기업 동향을 통해 산업 생태계를 살펴봅니다.`,
+                    sourceType: '스타트업 뉴스',
+                    urlQuery: keyword + ' 스타트업',
+                    imageText: 'Startup+News'
                 }
             ];
+
+            const demoArticles = [];
+            const currentTime = new Date().getTime();
             
-            return demoArticles;
+            // 60개 기사 생성 (10페이지 x 6개)
+            for (let i = 0; i < 60; i++) {
+                const template = newsTemplates[i % newsTemplates.length];
+                const articleTime = currentTime - (i * 30 * 60 * 1000); // 30분씩 차이
+                const variation = Math.floor(i / newsTemplates.length) + 1;
+                
+                demoArticles.push({
+                    title: variation > 1 ? `${template.titleTemplate} (${variation})` : template.titleTemplate,
+                    description: template.descTemplate,
+                    url: `https://search.naver.com/search.naver?query=${encodeURIComponent(template.urlQuery)}&where=news`,
+                    source: source === 'all' ? template.sourceType : getSourceName(source),
+                    publishedAt: new Date(articleTime).toLocaleString('ko-KR'),
+                    imageUrl: `https://via.placeholder.com/300x200?text=${template.imageText}`,
+                    timestamp: articleTime
+                });
+            }
+            
+            // 최신순 정렬 (상단이 최신)
+            return demoArticles.sort((a, b) => b.timestamp - a.timestamp);
         }
 
         // 소스 이름 반환
