@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>뉴스 스크래퍼 - 키워드별 게시판</title>
+    <title>뉴스 스크래퍼 - 스마트 키워드 검색</title>
     <style>
         * {
             margin: 0;
@@ -86,7 +86,72 @@
             display: block;
         }
 
-        /* 검색 섹션 */
+        /* 고정 키워드 섹션 */
+        .fixed-keywords-section {
+            margin-bottom: 40px;
+        }
+
+        .fixed-keywords-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .fixed-keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .keyword-button {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196F3;
+            color: #1976D2;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .keyword-button:hover {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .keyword-button.empty {
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            color: #999;
+        }
+
+        .keyword-button.empty:hover {
+            background: #e0e0e0;
+            border-color: #999;
+            color: #666;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 자유 검색 섹션 */
+        .free-search-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
         .search-form {
             display: flex;
             gap: 15px;
@@ -162,7 +227,41 @@
             font-size: 14px;
         }
 
-        /* 키워드 관리 섹션 */
+        /* 뉴스 소스 선택 */
+        .news-source-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .source-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .source-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .source-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .source-btn.active:hover {
+            background: #1976D2;
+            border-color: #1976D2;
+        }
+
+        /* 키워드 관리 */
         .keyword-management {
             background: #f8f9fa;
             padding: 20px;
@@ -209,6 +308,15 @@
             color: inherit;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        /* 키워드 입력 섹션 */
+        .keyword-input-section {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: flex-end;
         }
 
         /* 로딩 및 메시지 */
@@ -332,21 +440,6 @@
             color: white;
         }
 
-        /* 게시판 섹션 */
-        .board-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .article-count {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
         /* 메시지 */
         .error-message {
             background: #ffebee;
@@ -369,13 +462,31 @@
             color: #666;
         }
 
-        /* 키워드 입력 섹션 */
-        .keyword-input-section {
-            display: flex;
+        /* 통계 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin: 20px 0;
-            flex-wrap: wrap;
-            align-items: flex-end;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
         }
 
         /* 반응형 디자인 */
@@ -413,6 +524,18 @@
                 align-self: stretch !important;
                 margin-top: 10px;
             }
+
+            .fixed-keywords-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .news-source-selector {
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -420,34 +543,59 @@
     <div class="container">
         <div class="header">
             <h1>📰 뉴스 스크래퍼</h1>
-            <p>키워드별로 뉴스를 검색하고 저장하는 개인 게시판</p>
+            <p>스마트 키워드 시스템으로 뉴스를 빠르게 찾아보세요</p>
         </div>
 
         <!-- 네비게이션 탭 -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('search')">🔍 뉴스 검색</button>
+            <button class="nav-tab active" onclick="switchTab('quick')">⚡ 빠른 검색</button>
             <button class="nav-tab" onclick="switchTab('boards')">📂 내 게시판</button>
-            <button class="nav-tab" onclick="switchTab('manage')">⚙️ 키워드 관리</button>
+            <button class="nav-tab" onclick="switchTab('manage')">⚙️ 설정</button>
         </div>
 
-        <!-- 검색 탭 -->
-        <div id="search-tab" class="tab-content active">
-            <form class="search-form" id="newsForm">
-                <div class="input-group">
-                    <label for="keyword">검색 키워드</label>
-                    <input type="text" id="keyword" name="keyword" placeholder="예: 기술, 정치, 경제" required>
+        <!-- 빠른 검색 탭 -->
+        <div id="quick-tab" class="tab-content active">
+            <!-- 고정 키워드 섹션 -->
+            <div class="fixed-keywords-section">
+                <div class="fixed-keywords-header">
+                    <h3>🔥 자주 찾는 키워드 (빠른 접근)</h3>
+                    <button class="btn btn-secondary btn-small" onclick="switchTab('manage')">키워드 설정</button>
                 </div>
-                <div class="input-group">
-                    <label for="source">뉴스 소스</label>
-                    <select id="source" name="source">
-                        <option value="all">전체</option>
-                        <option value="naver">네이버 뉴스</option>
-                        <option value="daum">다음 뉴스</option>
-                        <option value="google">구글 뉴스</option>
-                    </select>
+                
+                <div class="fixed-keywords-grid" id="fixedKeywordsGrid">
+                    <!-- 고정 키워드 버튼들이 여기에 표시됩니다 -->
                 </div>
-                <button type="submit" class="btn">🔍 검색</button>
-            </form>
+                
+                <div class="news-source-selector" id="newsSourceSelector" style="display: none;">
+                    <span style="font-weight: 600; margin-right: 10px;">뉴스 소스 선택:</span>
+                    <button class="source-btn active" data-source="naver">네이버</button>
+                    <button class="source-btn" data-source="daum">다음</button>
+                    <button class="source-btn" data-source="google">구글</button>
+                </div>
+            </div>
+
+            <!-- 자유 검색 섹션 -->
+            <div class="free-search-section">
+                <h3>🔍 새로운 키워드 검색</h3>
+                <p style="margin-bottom: 20px; color: #666;">위에 없는 키워드나 임시 검색용</p>
+                
+                <form class="search-form" id="newsForm">
+                    <div class="input-group">
+                        <label for="keyword">검색 키워드</label>
+                        <input type="text" id="keyword" name="keyword" placeholder="예: 블록체인, 우주개발, 환경" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="source">뉴스 소스</label>
+                        <select id="source" name="source">
+                            <option value="all">전체</option>
+                            <option value="naver">네이버 뉴스</option>
+                            <option value="daum">다음 뉴스</option>
+                            <option value="google">구글 뉴스</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" style="align-self: flex-end;">🔍 검색</button>
+                </form>
+            </div>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
@@ -456,9 +604,9 @@
 
             <div id="search-results">
                 <div class="welcome-message" id="welcomeMessage">
-                    <h3>🎯 뉴스 검색을 시작하세요</h3>
-                    <p>관심 있는 키워드를 입력하고 최신 뉴스를 확인해보세요.<br>
-                    마음에 드는 기사는 저장 버튼(💾)을 클릭해서 키워드별 게시판에 보관할 수 있습니다.</p>
+                    <h3>🎯 원하는 방법으로 뉴스를 찾아보세요</h3>
+                    <p>🔥 <strong>자주 찾는 키워드</strong>: 클릭 한 번으로 바로 뉴스 사이트로 이동<br>
+                    🔍 <strong>새로운 키워드</strong>: 임시 검색이나 새로운 주제 탐색</p>
                 </div>
             </div>
         </div>
@@ -480,16 +628,35 @@
             </div>
         </div>
 
-        <!-- 키워드 관리 탭 -->
+        <!-- 설정 탭 -->
         <div id="manage-tab" class="tab-content">
+            <!-- 고정 키워드 설정 -->
             <div class="keyword-management">
-                <h3>⚙️ 키워드 관리</h3>
-                <p>새로운 키워드를 추가하거나 기존 키워드를 삭제할 수 있습니다.</p>
+                <h3>🔥 고정 키워드 설정 (최대 10개)</h3>
+                <p>자주 검색하는 키워드를 설정하면 빠른 접근 버튼으로 만들어집니다.</p>
+                
+                <div class="keyword-input-section">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="fixedKeyword">고정 키워드</label>
+                        <input type="text" id="fixedKeyword" placeholder="예: AI, 경제, 정치, 스포츠">
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="addFixedKeyword()" style="align-self: flex-end;">📌 고정 추가</button>
+                </div>
+
+                <div class="keyword-list" id="fixedKeywordsList">
+                    <!-- 고정 키워드 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <!-- 일반 키워드 관리 -->
+            <div class="keyword-management">
+                <h3>📝 일반 키워드 관리</h3>
+                <p>게시판용 키워드를 추가하거나 삭제할 수 있습니다.</p>
                 
                 <div class="keyword-input-section">
                     <div class="input-group" style="flex: 1;">
                         <label for="newKeyword">새 키워드</label>
-                        <input type="text" id="newKeyword" placeholder="예: AI, 경제, 스포츠">
+                        <input type="text" id="newKeyword" placeholder="예: 블록체인, 우주개발, 환경">
                     </div>
                     <button type="button" class="btn btn-success" onclick="addKeyword()" style="align-self: flex-end;">➕ 추가</button>
                 </div>
@@ -499,9 +666,10 @@
                 </div>
             </div>
 
+            <!-- 통계 -->
             <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                 <h4>📊 통계</h4>
-                <div id="statistics"></div>
+                <div class="stats-grid" id="statsGrid"></div>
             </div>
         </div>
     </div>
@@ -511,41 +679,94 @@
         let currentKeyword = null;
         let keywords = JSON.parse(localStorage.getItem('newsKeywords')) || [];
         let savedArticles = JSON.parse(localStorage.getItem('savedArticles')) || {};
+        let fixedKeywords = JSON.parse(localStorage.getItem('fixedKeywords')) || ['AI', '경제', '정치', '기술', '스포츠'];
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('뉴스 스크래퍼 게시판이 준비되었습니다!');
-            updateKeywordLists();
+            console.log('뉴스 스크래퍼가 준비되었습니다!');
+            updateAllKeywordLists();
             updateStatistics();
+            setupNewsSourceSelector();
             
-            // 새 키워드 입력에서 Enter 키 처리
+            // 키워드 입력 필드에서 Enter 키 처리
             document.getElementById('newKeyword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addKeyword();
-                }
+                if (e.key === 'Enter') addKeyword();
+            });
+            
+            document.getElementById('fixedKeyword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addFixedKeyword();
             });
         });
 
         // 탭 전환
         function switchTab(tabName) {
-            // 모든 탭 비활성화
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // 선택된 탭 활성화
             event.target.classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
             
-            // 탭별 초기화
             if (tabName === 'boards') {
-                updateKeywordLists();
+                updateAllKeywordLists();
             } else if (tabName === 'manage') {
-                updateKeywordLists();
+                updateAllKeywordLists();
                 updateStatistics();
             }
         }
 
-        // 키워드 추가
+        // 뉴스 소스 선택기 설정
+        function setupNewsSourceSelector() {
+            const selector = document.getElementById('newsSourceSelector');
+            const buttons = selector.querySelectorAll('.source-btn');
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // 고정 키워드 추가
+        function addFixedKeyword() {
+            const input = document.getElementById('fixedKeyword');
+            const keyword = input.value.trim();
+            
+            if (!keyword) {
+                alert('키워드를 입력해주세요.');
+                return;
+            }
+            
+            if (fixedKeywords.length >= 10) {
+                alert('고정 키워드는 최대 10개까지만 추가할 수 있습니다.');
+                return;
+            }
+            
+            if (fixedKeywords.includes(keyword)) {
+                alert('이미 존재하는 고정 키워드입니다.');
+                return;
+            }
+            
+            fixedKeywords.push(keyword);
+            saveData();
+            input.value = '';
+            updateAllKeywordLists();
+            
+            alert(`"${keyword}" 키워드가 고정 키워드로 추가되었습니다.`);
+        }
+
+        // 고정 키워드 삭제
+        function removeFixedKeyword(keyword) {
+            if (!confirm(`"${keyword}" 고정 키워드를 삭제하시겠습니까?`)) {
+                return;
+            }
+            
+            fixedKeywords = fixedKeywords.filter(k => k !== keyword);
+            saveData();
+            updateAllKeywordLists();
+        }
+
+        // 일반 키워드 추가
         function addKeyword() {
             const input = document.getElementById('newKeyword');
             const keyword = input.value.trim();
@@ -564,13 +785,13 @@
             savedArticles[keyword] = [];
             saveData();
             input.value = '';
-            updateKeywordLists();
+            updateAllKeywordLists();
             updateStatistics();
             
             alert(`"${keyword}" 키워드가 추가되었습니다.`);
         }
 
-        // 키워드 삭제
+        // 일반 키워드 삭제
         function deleteKeyword(keyword) {
             if (!confirm(`"${keyword}" 키워드와 저장된 모든 기사를 삭제하시겠습니까?`)) {
                 return;
@@ -585,17 +806,103 @@
             }
             
             saveData();
-            updateKeywordLists();
+            updateAllKeywordLists();
             updateStatistics();
         }
 
-        // 키워드 목록 업데이트
-        function updateKeywordLists() {
-            const boardList = document.getElementById('boardKeywordList');
-            const manageList = document.getElementById('manageKeywordList');
+        // 고정 키워드 클릭 - 뉴스 사이트로 직접 이동
+        function onFixedKeywordClick(keyword) {
+            const selector = document.getElementById('newsSourceSelector');
+            const activeSource = selector.querySelector('.source-btn.active').dataset.source;
             
-            // 게시판 키워드 목록
+            let url;
+            switch(activeSource) {
+                case 'naver':
+                    url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
+                    break;
+                case 'daum':
+                    url = `https://search.daum.net/search?w=news&q=${encodeURIComponent(keyword)}`;
+                    break;
+                case 'google':
+                    url = `https://news.google.com/search?q=${encodeURIComponent(keyword)}&hl=ko&gl=KR&ceid=KR:ko`;
+                    break;
+                default:
+                    url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
+            }
+            
+            // 새 탭에서 열기
+            window.open(url, '_blank');
+            
+            // 소스 선택기 숨기기
+            document.getElementById('newsSourceSelector').style.display = 'none';
+        }
+
+        // 고정 키워드 버튼에 마우스 오버 시 소스 선택기 표시
+        function showSourceSelector() {
+            document.getElementById('newsSourceSelector').style.display = 'flex';
+        }
+
+        // 모든 키워드 목록 업데이트
+        function updateAllKeywordLists() {
+            updateFixedKeywordsList();
+            updateFixedKeywordsGrid();
+            updateBoardKeywordList();
+            updateManageKeywordList();
+        }
+
+        // 고정 키워드 그리드 업데이트
+        function updateFixedKeywordsGrid() {
+            const grid = document.getElementById('fixedKeywordsGrid');
+            grid.innerHTML = '';
+            
+            // 최대 10개 슬롯 생성
+            for (let i = 0; i < 10; i++) {
+                const button = document.createElement('button');
+                button.className = 'keyword-button';
+                
+                if (i < fixedKeywords.length) {
+                    const keyword = fixedKeywords[i];
+                    button.textContent = keyword;
+                    button.onclick = () => onFixedKeywordClick(keyword);
+                    button.onmouseenter = showSourceSelector;
+                } else {
+                    button.textContent = '+ 키워드 추가';
+                    button.className += ' empty';
+                    button.onclick = () => {
+                        switchTab('manage');
+                        document.getElementById('fixedKeyword').focus();
+                    };
+                }
+                
+                grid.appendChild(button);
+            }
+        }
+
+        // 설정 탭의 고정 키워드 목록 업데이트
+        function updateFixedKeywordsList() {
+            const list = document.getElementById('fixedKeywordsList');
+            list.innerHTML = '';
+            
+            fixedKeywords.forEach(keyword => {
+                const tag = document.createElement('div');
+                tag.className = 'keyword-tag';
+                tag.innerHTML = `
+                    📌 ${keyword}
+                    <button class="delete-btn" onclick="event.stopPropagation(); removeFixedKeyword('${keyword}')">×</button>
+                `;
+                list.appendChild(tag);
+            });
+            
+            if (fixedKeywords.length === 0) {
+                list.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">고정 키워드를 추가해주세요.</p>';
+            }
+        }
+
+        // 게시판 키워드 목록 업데이트
+        function updateBoardKeywordList() {
+            const boardList = document.getElementById('boardKeywordList');
             boardList.innerHTML = '';
+            
             keywords.forEach(keyword => {
                 const count = savedArticles[keyword] ? savedArticles[keyword].length : 0;
                 const tag = document.createElement('div');
@@ -605,8 +912,16 @@
                 boardList.appendChild(tag);
             });
             
-            // 관리 키워드 목록
+            if (keywords.length === 0) {
+                boardList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">저장된 키워드가 없습니다. 설정에서 추가해주세요.</p>';
+            }
+        }
+
+        // 설정 탭의 일반 키워드 목록 업데이트
+        function updateManageKeywordList() {
+            const manageList = document.getElementById('manageKeywordList');
             manageList.innerHTML = '';
+            
             keywords.forEach(keyword => {
                 const count = savedArticles[keyword] ? savedArticles[keyword].length : 0;
                 const tag = document.createElement('div');
@@ -619,7 +934,6 @@
             });
             
             if (keywords.length === 0) {
-                boardList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">저장된 키워드가 없습니다. 키워드 관리에서 추가해주세요.</p>';
                 manageList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">키워드를 추가해주세요.</p>';
             }
         }
@@ -627,7 +941,7 @@
         // 키워드 선택
         function selectKeyword(keyword) {
             currentKeyword = keyword;
-            updateKeywordLists();
+            updateAllKeywordLists();
             showSavedArticles(keyword);
         }
 
@@ -647,9 +961,9 @@
             }
             
             boardContent.innerHTML = `
-                <div class="board-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     <h3>📂 ${keyword} 게시판</h3>
-                    <div class="article-count">총 ${articles.length}개의 기사</div>
+                    <div style="color: #666; font-size: 0.9rem;">총 ${articles.length}개의 기사</div>
                 </div>
                 <div class="news-grid" id="savedNewsGrid"></div>
             `;
@@ -699,20 +1013,34 @@
             savedArticles[keyword].splice(index, 1);
             saveData();
             showSavedArticles(keyword);
-            updateKeywordLists();
+            updateAllKeywordLists();
             updateStatistics();
         }
 
         // 통계 업데이트
         function updateStatistics() {
-            const statsDiv = document.getElementById('statistics');
+            const statsGrid = document.getElementById('statsGrid');
             const totalKeywords = keywords.length;
             const totalArticles = Object.values(savedArticles).reduce((sum, articles) => sum + articles.length, 0);
+            const fixedKeywordsCount = fixedKeywords.length;
             
-            statsDiv.innerHTML = `
-                <p><strong>총 키워드:</strong> ${totalKeywords}개</p>
-                <p><strong>총 저장된 기사:</strong> ${totalArticles}개</p>
-                <p><strong>평균 키워드당 기사 수:</strong> ${totalKeywords > 0 ? Math.round(totalArticles / totalKeywords * 10) / 10 : 0}개</p>
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${fixedKeywordsCount}</div>
+                    <div class="stat-label">고정 키워드</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalKeywords}</div>
+                    <div class="stat-label">전체 키워드</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalArticles}</div>
+                    <div class="stat-label">저장된 기사</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalKeywords > 0 ? Math.round(totalArticles / totalKeywords * 10) / 10 : 0}</div>
+                    <div class="stat-label">평균 기사 수</div>
+                </div>
             `;
         }
 
@@ -766,9 +1094,9 @@
             }
             
             results.innerHTML = `
-                <div class="board-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     <h3>🔍 "${searchKeyword}" 검색 결과</h3>
-                    <div class="article-count">${articles.length}개의 기사를 찾았습니다</div>
+                    <div style="color: #666; font-size: 0.9rem;">${articles.length}개의 기사를 찾았습니다</div>
                 </div>
                 <div class="news-grid" id="searchNewsGrid"></div>
             `;
@@ -824,7 +1152,7 @@
             // 기사 저장
             savedArticles[searchKeyword].push(article);
             saveData();
-            updateKeywordLists();
+            updateAllKeywordLists();
             updateStatistics();
             
             // 저장 버튼 상태 변경
@@ -896,7 +1224,8 @@
         function saveData() {
             localStorage.setItem('newsKeywords', JSON.stringify(keywords));
             localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            localStorage.setItem('fixedKeywords', JSON.stringify(fixedKeywords));
         }
     </script>
 </body>
-</html><!-- Cache buster: Thu Oct 16 06:32:31 UTC 2025 -->
+</html>
