@@ -192,7 +192,11 @@ function generateDemoNewsData(agency) {
         // 더 현실적인 개별 보도자료 URL 생성 (실제 사이트 구조 기반)
         let articleUrl;
         const dateStr = publishedAt.toISOString().slice(0, 10).replace(/-/g, '');
-        const articleNum = String(1000 + i).slice(-3);
+        // 고유한 기사 번호 생성 (시간 기반 + 랜덤)
+        const timeBasedId = publishedAt.getHours().toString().padStart(2, '0') + 
+                           publishedAt.getMinutes().toString().padStart(2, '0') + 
+                           Math.floor(Math.random() * 100).toString().padStart(2, '0');
+        const articleNum = timeBasedId;
         
         switch (agency.code) {
             case 'fsc':
