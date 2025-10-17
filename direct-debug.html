@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직접 디버그</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-panel { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 10px 0; }
+        .debug-button { padding: 10px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .debug-result { background: #e9ecef; padding: 10px; margin: 5px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>탭 전환 직접 디버그</h1>
+    
+    <div class="debug-panel">
+        <h3>1단계: switchTab 함수 직접 호출</h3>
+        <button class="debug-button" onclick="testSwitchTabDirect()">switchTab('boards') 직접 호출</button>
+        <button class="debug-button" onclick="testSwitchTabGov()">switchTab('government') 직접 호출</button>
+        <div class="debug-result" id="direct-result">결과 대기 중...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h3>2단계: DOM 요소 상태 확인</h3>
+        <button class="debug-button" onclick="checkDOMElements()">DOM 요소들 확인</button>
+        <div class="debug-result" id="dom-result">결과 대기 중...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h3>3단계: 실제 클릭 이벤트 시뮬레이션</h3>
+        <button class="debug-button" onclick="simulateTabClick('boards')">내 게시판 탭 클릭</button>
+        <button class="debug-button" onclick="simulateTabClick('government')">정부 보도자료 탭 클릭</button>
+        <div class="debug-result" id="click-result">결과 대기 중...</div>
+    </div>
+
+    <div class="debug-panel">
+        <h3>메인 사이트 확인</h3>
+        <a href="/" target="_blank" style="display: inline-block; padding: 10px; background: #28a745; color: white; text-decoration: none;">메인 사이트 새 창에서 열기</a>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+
+        function testSwitchTabDirect() {
+            const result = document.getElementById('direct-result');
+            result.innerHTML = '테스트 중...';
+
+            // 메인 사이트의 switchTab 함수를 여기서 구현해서 테스트
+            console.log('switchTab 함수 직접 테스트 시작');
+            
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    // HTML에서 switchTab 함수를 추출
+                    const scriptMatch = html.match(/async function switchTab[\s\S]*?(?=\s*\/\/|function|$)/);
+                    if (scriptMatch) {
+                        result.innerHTML = `
+                            switchTab 함수 발견됨:<br>
+                            • 함수 타입: ${scriptMatch[0].includes('async') ? 'async' : 'sync'}<br>
+                            • 함수 길이: ${scriptMatch[0].length}자<br>
+                            • 상태: 정상적으로 정의됨
+                        `;
+                    } else {
+                        result.innerHTML = '❌ switchTab 함수를 찾을 수 없습니다';
+                    }
+                })
+                .catch(error => {
+                    result.innerHTML = `❌ 오류: ${error.message}`;
+                });
+        }
+
+        function testSwitchTabGov() {
+            const result = document.getElementById('direct-result');
+            result.innerHTML = 'government 탭 함수 테스트 중...';
+
+            // API 연결성 테스트
+            fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=3`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        result.innerHTML = `
+                            ✅ government 탭 API 테스트 성공:<br>
+                            • API 응답: 정상<br>
+                            • 뉴스 데이터: ${data.data.length}건<br>
+                            • 최신 뉴스: "${data.data[0]?.title}"<br>
+                            → government 탭 데이터는 정상
+                        `;
+                    } else {
+                        result.innerHTML = '❌ API 응답 실패';
+                    }
+                })
+                .catch(error => {
+                    result.innerHTML = `❌ API 오류: ${error.message}`;
+                });
+        }
+
+        function checkDOMElements() {
+            const result = document.getElementById('dom-result');
+            result.innerHTML = 'DOM 요소 확인 중...';
+
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    // 주요 DOM 요소들 확인
+                    const hasNavTabs = html.includes('class="nav-tabs"');
+                    const hasBoardsTab = html.includes('onclick="switchTab(\'boards\')"');
+                    const hasGovernmentTab = html.includes('onclick="switchTab(\'government\')"');
+                    const hasBoardsContent = html.includes('id="boards-tab"');
+                    const hasGovernmentContent = html.includes('id="government-tab"');
+                    const hasSwitchTabFunction = html.includes('function switchTab');
+
+                    result.innerHTML = `
+                        DOM 요소 존재 여부:<br>
+                        • nav-tabs 클래스: ${hasNavTabs ? '✅' : '❌'}<br>
+                        • boards 탭 버튼: ${hasBoardsTab ? '✅' : '❌'}<br>
+                        • government 탭 버튼: ${hasGovernmentTab ? '✅' : '❌'}<br>
+                        • boards 컨텐츠: ${hasBoardsContent ? '✅' : '❌'}<br>
+                        • government 컨텐츠: ${hasGovernmentContent ? '✅' : '❌'}<br>
+                        • switchTab 함수: ${hasSwitchTabFunction ? '✅' : '❌'}<br>
+                        
+                        ${!hasBoardsTab || !hasGovernmentTab ? '<br>❌ 탭 버튼 onclick 속성에 문제가 있을 수 있습니다!' : ''}
+                        ${!hasSwitchTabFunction ? '<br>❌ switchTab 함수가 정의되지 않았습니다!' : ''}
+                    `;
+                })
+                .catch(error => {
+                    result.innerHTML = `❌ HTML 분석 오류: ${error.message}`;
+                });
+        }
+
+        function simulateTabClick(tabName) {
+            const result = document.getElementById('click-result');
+            result.innerHTML = `${tabName} 탭 클릭 시뮬레이션 중...`;
+
+            // 새 창에서 메인 사이트를 열고 탭 클릭을 시뮬레이션
+            const newWindow = window.open('/', '_blank');
+            
+            if (newWindow) {
+                result.innerHTML = `
+                    ${tabName} 탭 테스트:<br>
+                    • 새 창에서 메인 사이트가 열렸습니다<br>
+                    • 수동으로 "${tabName === 'boards' ? '📂 내 게시판' : '🏛️ 정부 보도자료'}" 탭을 클릭해보세요<br>
+                    • 탭 전환이 되는지 직접 확인하세요<br>
+                    <br>
+                    만약 탭 전환이 되지 않는다면:<br>
+                    1. F12를 눌러 개발자 도구를 열고<br>
+                    2. Console 탭에서 오류 메시지를 확인하세요<br>
+                    3. 'switchTab is not defined' 같은 오류가 있는지 확인하세요
+                `;
+            } else {
+                result.innerHTML = '❌ 팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해주세요.';
+            }
+        }
+
+        // 페이지 로드 시 자동 DOM 확인
+        window.addEventListener('load', () => {
+            setTimeout(checkDOMElements, 1000);
+        });
+    </script>
+</body>
+</html>

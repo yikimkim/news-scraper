@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>링크 기능 실시간 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .url-display { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; word-break: break-all; }
+        .test-card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; background: white; }
+        .government-news-card { background: #f8f9fa; border: 1px solid #007bff; }
+        .news-card { background: #fff8dc; border: 1px solid #ffa500; }
+    </style>
+</head>
+<body>
+    <h1>🔍 링크 기능 실시간 테스트</h1>
+    <p><strong>목적:</strong> 사용자가 보고하는 "원문 보기"와 "자세히 읽기" 버튼의 실제 동작을 확인</p>
+
+    <div class="test-section">
+        <h2>🏛️ 정부 보도자료 카드 테스트</h2>
+        <p>현재 코드에서 실제로 생성되는 정부 보도자료 카드</p>
+        
+        <div class="test-card government-news-card">
+            <div class="news-content">
+                <div class="news-header">
+                    <span class="news-source">금융위원회</span>
+                    <span class="news-date">2024-10-15</span>
+                </div>
+                <h4 class="news-title clickable-title">디지털 자산 규제 방안 발표 - 10월 15일</h4>
+                <p class="news-summary">금융위원회가 디지털 자산의 건전한 육성을 위한 새로운 규제 방안을 발표했습니다.</p>
+                <div class="news-footer">
+                    <a href="#" class="news-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); testGovernmentLink(event)">📖 관련 기사 찾기</a>
+                    <button class="save-btn" onclick="event.stopPropagation(); alert('저장 기능 테스트')" title="저장">💾</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="gov-url-result" class="url-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ 빠른 검색 카드 테스트</h2>
+        <p>현재 코드에서 실제로 생성되는 빠른 검색 카드</p>
+        
+        <div class="test-card news-card">
+            <button class="save-btn" onclick="event.stopPropagation(); alert('저장 기능 테스트')" title="기사 저장">💾</button>
+            <img src="https://via.placeholder.com/300x200?text=No+Image" alt="뉴스 이미지" style="width: 100%; height: 150px; object-fit: cover;">
+            <div class="news-card-content">
+                <div class="news-meta">
+                    <span>연합뉴스</span>
+                    <span>2024-10-15</span>
+                </div>
+                <h3 class="clickable-title">디지털 자산 투자자 보호 강화 방안 논의</h3>
+                <p>금융당국이 디지털 자산 투자자 보호를 위한 새로운 규제 방안을 검토하고 있다고 발표했습니다.</p>
+                <a href="#" class="news-link" target="_blank" onclick="event.stopPropagation(); testQuickSearchLink(event)">관련 기사 찾기 →</a>
+            </div>
+        </div>
+        
+        <div id="quick-url-result" class="url-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 URL 생성 함수 직접 테스트</h2>
+        
+        <button class="button" onclick="testGenerateArticleUrl()">정부 보도자료 URL 생성 테스트</button>
+        <button class="button" onclick="testGenerateQuickSearchUrl()">빠른 검색 URL 생성 테스트</button>
+        
+        <div id="function-test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>❓ 사용자 보고 사항 확인</h2>
+        <p>사용자가 언급한 "원문 보기"와 "자세히 읽기" 버튼을 찾지 못했습니다.</p>
+        <p><strong>현재 코드의 실제 버튼 텍스트:</strong></p>
+        <ul>
+            <li>정부 보도자료: "📖 관련 기사 찾기"</li>
+            <li>빠른 검색: "관련 기사 찾기 →"</li>
+        </ul>
+        <p><strong>가능한 원인:</strong></p>
+        <ul>
+            <li>다른 버전의 코드가 실행 중일 수 있음</li>
+            <li>캐시된 이전 버전을 보고 있을 수 있음</li>
+            <li>백엔드 API 포트 문제 (현재 3001 포트 사용)</li>
+        </ul>
+    </div>
+
+    <script>
+        // 정부 보도자료 URL 생성 함수 (index.html에서 복사)
+        function generateArticleUrl(item) {
+            // 기존 URL이 개별 보도자료를 지시하는 경우 (예: view.do, Detail.do 포함)
+            if (item.url && (item.url.includes('view.do') || item.url.includes('Detail.do') || item.url.includes('/view/') || item.url.includes('/detail/'))) {
+                return item.url;
+            }
+            
+            // 제목에서 핵심 키워드 추출
+            const titleKeywords = item.title.replace(/- \d+월 \d+일$/, '').trim().split(' ');
+            const mainKeyword = titleKeywords[0] || '보도자료';
+            
+            // 날짜 정보 추출 (publishedAt 또는 제목에서)
+            let searchDate = '';
+            if (item.publishedAt) {
+                const date = new Date(item.publishedAt);
+                searchDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+            
+            // 기관별 검색 URL 생성 (더 정확한 검색을 위해)
+            let searchUrl;
+            const encodedKeyword = encodeURIComponent(mainKeyword);
+            const encodedAgency = encodeURIComponent(item.agency);
+            const encodedDate = encodeURIComponent(searchDate);
+            
+            switch (item.agencyCode) {
+                case 'fsc':
+                    // 금융위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fsc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'fss':
+                    // 금융감독원 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fss.or.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'ftc':
+                    // 공정거래위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:ftc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                default:
+                    // 기본 네이버 뉴스 검색
+                    searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}&sort=1`;
+            }
+            
+            return searchUrl;
+        }
+        
+        // 빠른 검색용 개선된 URL 생성 함수
+        function generateQuickSearchUrl(article, searchKeyword) {
+            // 기존 URL이 이미 직접 기사 링크인 경우
+            if (article.url && (article.url.includes('news.naver.com/main/read') || article.url.includes('/article/') || article.url.includes('/view/'))) {
+                return article.url;
+            }
+            
+            // 제목에서 핵심 키워드 추출 (부제목 제거)
+            let cleanTitle = article.title.replace(/ - .*$/, '').trim(); // 부제목 제거
+            cleanTitle = cleanTitle.replace(/\.\.\..*$/, '').trim(); // 생략 부분 제거
+            
+            // 제목의 주요 키워드 추출 (2-3개 주요 단어)
+            const titleWords = cleanTitle.split(' ').filter(word => word.length > 1); // 1글자 단어 제외
+            const keyTitleWords = titleWords.slice(0, 3).join(' '); // 주요 3개 단어
+            
+            // 날짜 정보 추출
+            let searchDate = '';
+            if (article.publishedAt) {
+                try {
+                    // 다양한 날짜 형식 지원
+                    let dateObj;
+                    if (typeof article.publishedAt === 'string') {
+                        // '에 대한 상세 정보'를 제거하고 날짜만 추출
+                        const dateStr = article.publishedAt.replace(/에 대한 .*$/, '').trim();
+                        dateObj = new Date(dateStr);
+                    } else {
+                        dateObj = new Date(article.publishedAt);
+                    }
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        searchDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+                    }
+                } catch (error) {
+                    console.warn('날짜 파싱 오류:', error);
+                }
+            }
+            
+            // 검색 전략: 원래 검색 키워드 + 제목 키워드 + 날짜
+            const searchParts = [];
+            
+            // 1. 원래 검색 키워드 추가
+            if (searchKeyword && searchKeyword.trim()) {
+                searchParts.push(searchKeyword.trim());
+            }
+            
+            // 2. 제목의 핵심 키워드 추가
+            if (keyTitleWords && keyTitleWords !== searchKeyword) {
+                searchParts.push(keyTitleWords);
+            }
+            
+            // 3. 날짜 정보 추가 (선택적)
+            if (searchDate) {
+                searchParts.push(searchDate);
+            }
+            
+            // 최종 검색 쿼리 생성
+            const finalSearchQuery = searchParts.join(' ').trim();
+            
+            // 네이버 뉴스 검색 URL 생성 (최신순 정렬)
+            const searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(finalSearchQuery)}&sort=1`;
+            
+            console.log(`빠른 검색 URL 생성: "${article.title}" -> "${finalSearchQuery}"`);
+            return searchUrl;
+        }
+
+        function testGovernmentLink(event) {
+            event.preventDefault();
+            
+            const testItem = {
+                title: "디지털 자산 규제 방안 발표 - 10월 15일",
+                agency: "금융위원회", 
+                agencyCode: "fsc",
+                publishedAt: "2024-10-15"
+            };
+            
+            const generatedUrl = generateArticleUrl(testItem);
+            
+            document.getElementById('gov-url-result').innerHTML = `
+                <strong>생성된 URL:</strong><br>
+                <a href="${generatedUrl}" target="_blank">${generatedUrl}</a>
+            `;
+            
+            console.log('정부 보도자료 URL 생성:', generatedUrl);
+            
+            // 실제로 새 탭에서 열기
+            window.open(generatedUrl, '_blank');
+        }
+
+        function testQuickSearchLink(event) {
+            event.preventDefault();
+            
+            const testArticle = {
+                title: "디지털 자산 투자자 보호 강화 방안 논의",
+                publishedAt: "2024-10-15"
+            };
+            
+            const generatedUrl = generateQuickSearchUrl(testArticle, "디지털자산");
+            
+            document.getElementById('quick-url-result').innerHTML = `
+                <strong>생성된 URL:</strong><br>
+                <a href="${generatedUrl}" target="_blank">${generatedUrl}</a>
+            `;
+            
+            console.log('빠른 검색 URL 생성:', generatedUrl);
+            
+            // 실제로 새 탭에서 열기
+            window.open(generatedUrl, '_blank');
+        }
+
+        function testGenerateArticleUrl() {
+            const testCases = [
+                {
+                    title: "디지털 자산 규제 방안 발표 - 10월 15일",
+                    agency: "금융위원회",
+                    agencyCode: "fsc",
+                    publishedAt: "2024-10-15"
+                },
+                {
+                    title: "금융소비자 보호 강화 방안",
+                    agency: "금융감독원", 
+                    agencyCode: "fss",
+                    publishedAt: "2024-10-14"
+                },
+                {
+                    title: "독점규제 및 공정거래에 관한 법률 개정안",
+                    agency: "공정거래위원회",
+                    agencyCode: "ftc", 
+                    publishedAt: "2024-10-13"
+                }
+            ];
+            
+            let resultHTML = '<h3>정부 보도자료 URL 생성 테스트 결과:</h3>';
+            
+            testCases.forEach((testCase, index) => {
+                const url = generateArticleUrl(testCase);
+                resultHTML += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                        <strong>테스트 ${index + 1}:</strong> ${testCase.title}<br>
+                        <strong>기관:</strong> ${testCase.agency}<br>
+                        <strong>생성된 URL:</strong> <a href="${url}" target="_blank">${url}</a>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('function-test-results').innerHTML = resultHTML;
+        }
+
+        function testGenerateQuickSearchUrl() {
+            const testCases = [
+                {
+                    article: { title: "디지털 자산 투자자 보호 강화 방안 논의", publishedAt: "2024-10-15" },
+                    keyword: "디지털자산"
+                },
+                {
+                    article: { title: "금융혁신 지원 특별법 시행령 개정", publishedAt: "2024-10-14" },
+                    keyword: "금융혁신"
+                },
+                {
+                    article: { title: "부동산 시장 안정화 대책 발표", publishedAt: "2024-10-13" },
+                    keyword: "부동산"
+                }
+            ];
+            
+            let resultHTML = '<h3>빠른 검색 URL 생성 테스트 결과:</h3>';
+            
+            testCases.forEach((testCase, index) => {
+                const url = generateQuickSearchUrl(testCase.article, testCase.keyword);
+                resultHTML += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                        <strong>테스트 ${index + 1}:</strong> ${testCase.article.title}<br>
+                        <strong>검색 키워드:</strong> ${testCase.keyword}<br>
+                        <strong>생성된 URL:</strong> <a href="${url}" target="_blank">${url}</a>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('function-test-results').innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>

@@ -34,8 +34,11 @@ app.use(compression());
 app.use(cors({
     origin: [
         'http://localhost:8000',
+        'http://localhost:8080',
         'https://yikimkim.github.io',
-        'https://8000-*' // sandbox URL 패턴
+        'https://8000-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai',
+        'https://8080-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai', // 정확한 프론트엔드 URL
+        /^https:\/\/\d+-.*\.sandbox\.novita\.ai$/ // 모든 sandbox URL 패턴
     ],
     credentials: true
 }));

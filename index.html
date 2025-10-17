@@ -729,23 +729,32 @@
             animation: spin 1s linear infinite;
         }
 
-        /* 정부 보도자료 가로형 레이아웃 */
+        /* 정부 보도자료 그리드 레이아웃 */
         .government-news-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
             margin-top: 20px;
+        }
+        
+        /* 반응형: 작은 화면에서는 단일 열 */
+        @media (max-width: 900px) {
+            .government-news-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         .government-news-card {
             display: flex;
+            flex-direction: column;
             background: white;
             border-radius: 12px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
-            min-height: 120px;
+            min-height: 180px;
+            height: 100%;
         }
 
         .government-news-card:hover {
@@ -759,6 +768,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            height: 100%;
         }
 
         .government-news-card .news-header {
@@ -847,6 +857,90 @@
             color: white;
         }
 
+        /* 정부기관 직접 링크 스타일 */
+        .agency-link {
+            display: inline-block;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white !important;
+            text-decoration: none !important;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+        
+        .agency-link:hover {
+            background: linear-gradient(45deg, #1976D2, #1BA6D2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        
+        .agency-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* 클릭 가능한 기사 카드 스타일 */
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        
+        .government-news-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            cursor: pointer;
+        }
+        
+        .clickable-title {
+            transition: color 0.3s ease;
+        }
+        
+        .clickable-title:hover {
+            color: #2196F3 !important;
+        }
+        
+        /* 카드 클릭 가이드 스타일 */
+        .news-card::after {
+            content: "클릭하여 기사 보기";
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .news-card:hover::after {
+            opacity: 1;
+        }
+        
+        .government-news-card::after {
+            content: "클릭하여 보도자료 보기";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .government-news-card:hover::after {
+            opacity: 1;
+        }
+
         /* 반응형 디자인 - 모바일에서는 세로형으로 변경 */
         @media (max-width: 768px) {
             .government-news-card {
@@ -896,10 +990,10 @@
 
         <!-- 네비게이션 탭 -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="simpleSwitchTab('quick')">⚡ 빠른 검색</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('boards')">📂 내 게시판</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('government')">🏛️ 정부 보도자료</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('manage')">⚙️ 설정</button>
+            <button class="nav-tab active" data-tab="quick">⚡ 빠른 검색</button>
+            <button class="nav-tab" data-tab="boards">📂 내 게시판</button>
+            <button class="nav-tab" data-tab="government">🏛️ 정부 보도자료</button>
+            <button class="nav-tab" data-tab="manage">⚙️ 설정</button>
         </div>
 
         <!-- 빠른 검색 탭 -->
@@ -908,18 +1002,15 @@
             <div class="fixed-keywords-section">
                 <div class="fixed-keywords-header">
                     <h3>🔥 자주 찾는 키워드 (빠른 접근)</h3>
-                    <button class="btn btn-secondary btn-small" onclick="simpleSwitchTab('manage')">키워드 설정</button>
+                    <button class="btn btn-secondary btn-small" data-tab-link="manage">키워드 설정</button>
                 </div>
                 
                 <div class="fixed-keywords-grid" id="fixedKeywordsGrid">
                     <!-- 고정 키워드 버튼들이 여기에 표시됩니다 -->
                 </div>
                 
-                <div class="news-source-selector" id="newsSourceSelector" style="display: none;">
-                    <span style="font-weight: 600; margin-right: 10px;">뉴스 소스 선택:</span>
-                    <button class="source-btn active" data-source="naver">네이버</button>
-                    <button class="source-btn" data-source="daum">다음</button>
-                    <button class="source-btn" data-source="google">구글</button>
+                <div class="news-source-info" style="margin-top: 10px; padding: 8px 12px; background: #e3f2fd; border-radius: 5px; font-size: 0.9rem; color: #1976d2;">
+                    📰 <strong>뉴스 소스:</strong> 네이버 뉴스만 검색합니다
                 </div>
             </div>
 
@@ -935,11 +1026,8 @@
                     </div>
                     <div class="input-group">
                         <label for="source">뉴스 소스</label>
-                        <select id="source" name="source">
-                            <option value="all">전체</option>
-                            <option value="naver">네이버 뉴스</option>
-                            <option value="daum">다음 뉴스</option>
-                            <option value="google">구글 뉴스</option>
+                        <select id="source" name="source" disabled style="background: #f5f5f5;">
+                            <option value="naver" selected>네이버 뉴스 (고정)</option>
                         </select>
                     </div>
                     <button type="submit" class="btn" style="align-self: flex-end;">🔍 검색</button>
@@ -998,7 +1086,7 @@
                     <p>금융위원회, 금융감독원, 공정거래위원회의 최신 보도자료를 확인하세요</p>
                     <div class="update-info">
                         <span class="update-time">마지막 업데이트: <span id="lastUpdateTime">-</span></span>
-                        <button class="btn btn-secondary btn-small" onclick="refreshGovernmentNews()" id="refreshBtn">
+                        <button class="btn btn-secondary btn-small" id="refreshBtn">
                             <span id="refreshIcon">🔄</span> 새로고침
                         </button>
                     </div>
@@ -1006,10 +1094,10 @@
 
                 <!-- 기관 카테고리 선택 -->
                 <div class="agency-selector">
-                    <button class="agency-btn active" data-agency="all" onclick="selectAgency('all')">📊 전체</button>
-                    <button class="agency-btn" data-agency="fsc" onclick="selectAgency('fsc')">💰 금융위원회</button>
-                    <button class="agency-btn" data-agency="fss" onclick="selectAgency('fss')">🏦 금융감독원</button>
-                    <button class="agency-btn" data-agency="ftc" onclick="selectAgency('ftc')">⚖️ 공정거래위원회</button>
+                    <button class="agency-btn active" data-agency="all">📊 전체</button>
+                    <button class="agency-btn" data-agency="fsc">💰 금융위원회</button>
+                    <button class="agency-btn" data-agency="fss">🏦 금융감독원</button>
+                    <button class="agency-btn" data-agency="ftc">⚖️ 공정거래위원회</button>
                 </div>
 
                 <!-- 보도자료 통계 -->
@@ -1136,7 +1224,7 @@
                 
                 // 빠른 검색 탭만 명시적으로 활성화
                 const quickTab = document.getElementById('quick-tab');
-                const quickButton = document.querySelector('[onclick*="quick"]');
+                const quickButton = document.querySelector('[data-tab="quick"]');
                 
                 if (quickTab && quickButton) {
                     quickTab.classList.add('active');
@@ -1175,31 +1263,89 @@
                     console.warn('fixedKeyword 엘리먼트를 찾을 수 없습니다');
                 }
                 
+                // 📊 기관 필터 버튼들에 이벤트 리스너 추가
+                console.log('🏛️ 기관 필터 버튼 이벤트 리스너 설정 중...');
+                const agencyButtons = document.querySelectorAll('.agency-btn[data-agency]');
+                console.log(`발견된 기관 버튼 수: ${agencyButtons.length}`);
+                
+                agencyButtons.forEach(button => {
+                    const agency = button.getAttribute('data-agency');
+                    console.log(`기관 버튼 설정: ${agency} - ${button.textContent.trim()}`);
+                    
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log(`🏛️ 기관 버튼 클릭됨: ${agency}`);
+                        try {
+                            selectAgency(agency);
+                        } catch (error) {
+                            console.error(`기관 선택 오류 (${agency}):`, error);
+                        }
+                    });
+                });
+                
+                // 🔄 정부 보도자료 새로고침 버튼 이벤트 리스너 추가
+                console.log('🔄 새로고침 버튼 이벤트 리스너 설정 중...');
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        console.log('🔄 새로고침 버튼 클릭됨');
+                        try {
+                            await refreshGovernmentNews();
+                        } catch (error) {
+                            console.error('새로고침 오류:', error);
+                        }
+                    });
+                    console.log('✅ 새로고침 버튼 이벤트 리스너 설정 완료');
+                } else {
+                    console.warn('⚠️ refreshBtn 엘리먼트를 찾을 수 없습니다');
+                }
+                
+                console.log('✅ 모든 기관 필터 및 새로고침 버튼 이벤트 리스너 설정 완료');
                 console.log('DOM 초기화 완료!');
+                
+                // 📊 탭 버튼들에 이벤트 리스너 추가
+                console.log('🔗 탭 버튼 이벤트 리스너 설정 중...');
+                const tabButtons = document.querySelectorAll('.nav-tab[data-tab]');
+                console.log(`발견된 탭 버튼 수: ${tabButtons.length}`);
+                
+                tabButtons.forEach(button => {
+                    const tabName = button.getAttribute('data-tab');
+                    console.log(`탭 버튼 설정: ${tabName} - ${button.textContent.trim()}`);
+                    
+                    button.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        console.log(`🖱️ 탭 버튼 클릭됨: ${tabName}`);
+                        try {
+                            await switchTab(tabName);
+                        } catch (error) {
+                            console.error(`탭 전환 오류 (${tabName}):`, error);
+                        }
+                    });
+                });
+                
+                // 추가 탭 링크 버튼들도 설정
+                const tabLinkButtons = document.querySelectorAll('[data-tab-link]');
+                tabLinkButtons.forEach(button => {
+                    const tabName = button.getAttribute('data-tab-link');
+                    console.log(`탭 링크 버튼 설정: ${tabName} - ${button.textContent.trim()}`);
+                    
+                    button.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        console.log(`🖱️ 탭 링크 버튼 클릭됨: ${tabName}`);
+                        try {
+                            await switchTab(tabName);
+                        } catch (error) {
+                            console.error(`탭 전환 오류 (${tabName}):`, error);
+                        }
+                    });
+                });
+                
+                console.log('✅ 모든 탭 버튼 이벤트 리스너 설정 완료');
                 
                 // switchTab 함수 확인
                 if (typeof switchTab === 'function') {
                     console.log('✅ switchTab 함수가 정상적으로 정의되었습니다');
-                    
-                    // 10초 후 자동 탭 전환 테스트 (사용자 확인용)
-                    setTimeout(() => {
-                        console.log('🧪 자동 탭 전환 테스트 시작 (사용자 확인용)');
-                        
-                        // boards 탭으로 전환
-                        setTimeout(() => switchTab('boards'), 1000);
-                        
-                        // government 탭으로 전환  
-                        setTimeout(() => switchTab('government'), 3000);
-                        
-                        // 다시 quick 탭으로 돌아가기
-                        setTimeout(() => switchTab('quick'), 5000);
-                        
-                        setTimeout(() => {
-                            console.log('🎉 자동 테스트 완료! 탭 전환이 보이셨나요?');
-                        }, 6000);
-                        
-                    }, 10000);
-                    
                 } else {
                     console.error('❌ switchTab 함수가 정의되지 않았습니다!');
                 }
@@ -1327,13 +1473,10 @@
                 });
                 
                 // 클릭된 탭 버튼 활성화
-                const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+                const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
                 if (targetTab) {
                     targetTab.classList.add('active');
                     console.log(`✅ 탭 버튼 활성화: ${targetTab.textContent.trim()}`);
-                } else if (event && event.target) {
-                    event.target.classList.add('active');
-                    console.log(`✅ 이벤트 타겟으로 탭 버튼 활성화`);
                 } else {
                     console.warn(`⚠️ 탭 버튼을 찾을 수 없음: ${tabName}`);
                 }
@@ -1386,17 +1529,10 @@
             }
         }
 
-        // 뉴스 소스 선택기 설정
+        // 뉴스 소스 선택기 설정 (네이버 전용으로 간소화)
         function setupNewsSourceSelector() {
-            const selector = document.getElementById('newsSourceSelector');
-            const buttons = selector.querySelectorAll('.source-btn');
-            
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    buttons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+            // 네이버 뉴스만 사용하므로 별도 설정 불필요
+            console.log('뉴스 소스: 네이버 뉴스 전용');
         }
 
         // 고정 키워드 추가
@@ -1482,7 +1618,7 @@
             updateStatistics();
         }
 
-        // 고정 키워드 클릭 - 하단에 뉴스 검색 결과 표시
+        // 고정 키워드 클릭 - 하단에 뉴스 검색 결과 표시 (네이버 전용)
         function onFixedKeywordClick(keyword) {
             // 빠른 검색 탭에 있는지 확인
             const quickTab = document.getElementById('quick-tab');
@@ -1491,13 +1627,13 @@
                 switchTab('quick');
             }
             
-            // 기본 뉴스 소스를 'all'로 설정하여 검색
-            searchNews(keyword, 'all');
+            // 네이버 뉴스만 검색
+            searchNews(keyword, 'naver');
         }
 
-        // 고정 키워드 버튼에 마우스 오버 시 소스 선택기 표시
+        // 네이버 뉴스 전용으로 소스 선택기 불필요
         function showSourceSelector() {
-            document.getElementById('newsSourceSelector').style.display = 'flex';
+            // 네이버 뉴스만 사용하므로 별도 표시 불필요
         }
 
         // 모든 키워드 목록 업데이트
@@ -1786,8 +1922,11 @@
                 const newsCard = document.createElement('div');
                 newsCard.className = 'news-card';
                 
+                // 개선된 URL 생성 (빠른 검색용)
+                const improvedUrl = generateQuickSearchUrl(article, searchKeyword);
+                
                 newsCard.innerHTML = `
-                    <button class="save-btn" onclick="saveArticle(${globalIndex}, '${searchKeyword}')" title="기사 저장">
+                    <button class="save-btn" onclick="event.stopPropagation(); saveArticle(${globalIndex}, '${searchKeyword}')" title="기사 저장">
                         💾
                     </button>
                     <img src="${article.imageUrl}" alt="뉴스 이미지" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
@@ -1796,11 +1935,34 @@
                             <span>${article.source}</span>
                             <span>${article.publishedAt}</span>
                         </div>
-                        <h3>${article.title}</h3>
+                        <h3 class="clickable-title">${article.title}</h3>
                         <p>${article.description}</p>
-                        <a href="${article.url}" class="news-link" target="_blank">자세히 읽기 →</a>
+                        <a href="${improvedUrl}" class="news-link" target="_blank" onclick="event.stopPropagation()">자세히 읽기 →</a>
                     </div>
                 `;
+                
+                // 카드 전체 클릭 이벤트 - 개선된 URL 사용
+                newsCard.style.cursor = 'pointer';
+                
+                // URL 타입에 따른 시각적 피드백
+                const isDirectUrl = article.url && (
+                    article.url.includes('news.naver.com/main/read') || 
+                    article.url.includes('/article/') || 
+                    article.url.includes('/view/')
+                );
+                
+                if (isDirectUrl) {
+                    newsCard.title = '✅ 클릭하여 원문 기사로 바로 이동';
+                    newsCard.style.borderLeft = '4px solid #28a745';
+                } else {
+                    newsCard.title = '🔍 클릭하여 관련 기사 검색 결과 보기';  
+                    newsCard.style.borderLeft = '4px solid #17a2b8';
+                }
+                
+                newsCard.addEventListener('click', function() {
+                    console.log(`빠른 검색 카드 클릭: ${article.title} -> ${improvedUrl}`);
+                    window.open(improvedUrl, '_blank');
+                });
                 
                 newsGrid.appendChild(newsCard);
             });
@@ -1863,7 +2025,7 @@
             searchResults.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 기사 저장
+        // 기사 저장 (중복 제거 강화)
         function saveArticle(index, searchKeyword) {
             const article = allArticles[index];
             
@@ -1873,10 +2035,15 @@
                 savedArticles[searchKeyword] = [];
             }
             
-            // 중복 체크
-            const existingArticle = savedArticles[searchKeyword].find(saved => saved.title === article.title);
-            if (existingArticle) {
-                alert('이미 저장된 기사입니다.');
+            // 강화된 중복 체크 (제목과 URL 모두 확인)
+            const isDuplicate = savedArticles[searchKeyword].some(saved => 
+                saved.title === article.title || 
+                saved.url === article.url ||
+                (saved.title.includes(article.title.slice(0, 20)) && saved.title.length > 20)
+            );
+            
+            if (isDuplicate) {
+                alert('이미 저장된 기사이거나 유사한 기사가 있습니다.');
                 return;
             }
             
@@ -1898,30 +2065,30 @@
             alert('기사가 저장되었습니다!');
         }
 
-        // 데모 뉴스 생성 (총 60개 - 10페이지 x 6개)
+        // 네이버 전용 뉴스 생성 (정확한 키워드만 사용)
         function generateDemoNews(keyword, source) {
-            // 더욱 다양한 뉴스 템플릿 생성
+            // 키워드만 사용하는 정확한 검색 결과 시뮬레이션
             const titleVariations = [
-                `${keyword} 관련 최신 뉴스`,
-                `${keyword} 산업 동향 분석`,
+                `${keyword} 최신 소식`,
+                `${keyword} 업계 동향`,
+                `${keyword} 전문가 분석`,
+                `${keyword} 정책 발표`,
+                `${keyword} 기업 소식`,
+                `${keyword} 시장 현황`,
+                `${keyword} 규제 소식`,
+                `${keyword} 연구 결과`,
+                `${keyword} 글로벌 동향`,
+                `${keyword} 투자 소식`,
+                `${keyword} 업계 뉴스`,
+                `${keyword} 정부 보도`,
+                `${keyword} 기술 소식`,
+                `${keyword} 경제 영향`,
+                `${keyword} 소비자 관심`,
+                `${keyword} 산업 전망`,
                 `${keyword} 전문가 의견`,
-                `${keyword} 정책 변화 소식`,
-                `${keyword} 기술 혁신 현황`,
-                `${keyword} 시장 전망`,
-                `${keyword} 규제 동향`,
-                `${keyword} 연구 성과`,
-                `${keyword} 글로벌 현황`,
-                `${keyword} 투자 동향`,
-                `${keyword} 트렌드 분석`,
-                `${keyword} 업계 현황`,
-                `${keyword} 정부 발표`,
-                `${keyword} 기업 동향`,
-                `${keyword} 소비자 반응`,
-                `${keyword} 미래 전망`,
-                `${keyword} 경쟁 현황`,
-                `${keyword} 협력 방안`,
-                `${keyword} 성장 가능성`,
-                `${keyword} 위험 요소`
+                `${keyword} 정책 변화`,
+                `${keyword} 시장 분석`,
+                `${keyword} 업계 반응`
             ];
 
             const suffixes = [
@@ -1953,72 +2120,75 @@
                 '미래', '도전', '기회', '위험', '대응'
             ];
 
-            const sourceTypes = ['연합뉴스', 'KBS', 'MBC', 'SBS', '조선일보', '중앙일보', 
-                               '동아일보', '한겨레', '경향신문', '매일경제', '한국경제', 
-                               '서울경제', 'IT조선', '전자신문', '디지털타임스'];
+            // 네이버 뉴스 소스로 통일
+            const sourceType = '네이버 뉴스';
 
             const demoArticles = [];
             const currentTime = new Date().getTime();
+            const uniqueTitles = new Set(); // 중복 제목 방지
             
-            // 60개의 고유한 기사 생성
-            for (let i = 0; i < 60; i++) {
+            // 30개의 고유한 기사 생성 (중복 제거)
+            for (let i = 0; i < 30; i++) {
                 const titleBase = titleVariations[i % titleVariations.length];
                 const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-                const topic = newsTopics[Math.floor(Math.random() * newsTopics.length)];
-                const sourceType = sourceTypes[i % sourceTypes.length];
                 
-                // 시간 간격을 더 다양하게 (15분~2시간 사이)
-                const timeOffset = i * (15 + Math.random() * 105) * 60 * 1000;
+                // 시간 간격을 더 다양하게 (30분~4시간 사이)
+                const timeOffset = i * (30 + Math.random() * 210) * 60 * 1000;
                 const articleTime = currentTime - timeOffset;
                 
-                // 고유한 제목 생성
-                const uniqueId = Math.random().toString(36).substr(2, 9);
-                const title = `${titleBase} - ${suffix}`;
+                // 고유한 제목 생성 (중복 방지)
+                let title = `${titleBase} - ${suffix}`;
+                let attempts = 0;
+                while (uniqueTitles.has(title) && attempts < 10) {
+                    const altSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                    title = `${titleBase} - ${altSuffix}`;
+                    attempts++;
+                }
+                uniqueTitles.add(title);
                 
-                // 다양한 설명 생성
+                // 키워드 중심의 간결한 설명 생성
                 const descriptions = [
-                    `${keyword} 분야의 ${topic}에 대한 전문가들의 심층 분석과 향후 전망을 다뤄봅니다.`,
-                    `최근 ${keyword} 관련 ${topic} 동향과 이에 따른 업계의 대응 방안을 살펴봅니다.`,
-                    `${keyword} 산업에서 주목받고 있는 ${topic} 이슈와 그 영향력을 종합 보도합니다.`,
-                    `${keyword} 분야 전문가들이 제시하는 ${topic} 전략과 실행 방안을 정리했습니다.`,
-                    `${keyword} 관련 ${topic} 변화가 시장과 소비자에게 미치는 영향을 분석합니다.`
+                    `${keyword}에 대한 최신 뉴스와 전문가 분석을 제공합니다.`,
+                    `${keyword} 관련 업계 동향과 주요 이슈를 정리했습니다.`,
+                    `${keyword}의 최근 변화와 시장에 미치는 영향을 다룹니다.`,
+                    `${keyword}에 대한 정부 정책과 업계 반응을 종합 보도합니다.`,
+                    `${keyword} 분야의 주요 소식과 향후 전망을 분석합니다.`
                 ];
                 
                 const description = descriptions[i % descriptions.length];
                 
-                // 실제 뉴스 사이트 URL 생성
-                const realNewsUrls = [
-                    `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword + ' ' + topic)}`,
-                    `https://search.daum.net/search?w=news&q=${encodeURIComponent(keyword + ' ' + topic)}`,
-                    `https://www.google.com/search?q=${encodeURIComponent(keyword + ' ' + topic)}&tbm=nws`,
-                ];
+                // 개선된 URL 생성: 임시 객체를 만들어 generateQuickSearchUrl 사용
+                const tempArticle = {
+                    title: title,
+                    publishedAt: new Date(articleTime).toISOString()
+                };
+                const url = generateQuickSearchUrl(tempArticle, keyword);
                 
-                const url = realNewsUrls[i % realNewsUrls.length];
+                const uniqueId = Math.random().toString(36).substr(2, 9);
                 
                 demoArticles.push({
                     id: `demo_${uniqueId}`,
                     title: title,
                     description: description,
                     url: url,
-                    source: source === 'all' ? sourceType : getSourceName(source),
+                    source: sourceType,
                     publishedAt: new Date(articleTime).toLocaleString('ko-KR'),
-                    imageUrl: `https://via.placeholder.com/300x200/2196F3/ffffff?text=${encodeURIComponent(keyword)}`,
+                    imageUrl: `https://via.placeholder.com/300x200/00C73C/ffffff?text=${encodeURIComponent(keyword)}`,
                     timestamp: articleTime
                 });
             }
             
-            // 최신순 정렬 (상단이 최신)
-            return demoArticles.sort((a, b) => b.timestamp - a.timestamp);
+            // 최신순 정렬 및 중복 제거 (제목 기준)
+            const uniqueArticles = demoArticles.filter((article, index, self) => 
+                index === self.findIndex(a => a.title === article.title)
+            );
+            
+            return uniqueArticles.sort((a, b) => b.timestamp - a.timestamp);
         }
 
-        // 소스 이름 반환
+        // 소스 이름 반환 (네이버 전용)
         function getSourceName(source) {
-            const sourceNames = {
-                'naver': '네이버 뉴스',
-                'daum': '다음 뉴스',
-                'google': '구글 뉴스'
-            };
-            return sourceNames[source] || '종합 뉴스';
+            return '네이버 뉴스';
         }
 
         // 날짜 포맷팅 함수
@@ -2060,10 +2230,8 @@
         // 정부 보도자료 시스템 (API 연동)
         // =================
         
-        // API 설정
-        const API_BASE_URL = window.location.hostname.includes('sandbox') || window.location.hostname.includes('localhost') 
-            ? `${window.location.protocol}//${window.location.hostname.replace('8000-', '3002-')}`
-            : '/api'; // 프로덕션에서는 상대 경로
+        // API 설정 (같은 서버 사용으로 CORS 문제 해결)
+        const API_BASE_URL = ''; // 상대 경로로 변경하여 CORS 문제 완전 해결
         
         let currentAgency = 'all';
         let currentGovernmentPage = 1;
@@ -2163,37 +2331,100 @@
                 await updateGovernmentStats();
                 
                 if (newsData.length === 0) {
+                    // 기관별 실제 보도자료 사이트 링크 제공
+                    const agencyLinks = {
+                        'all': `
+                            <div class="agency-links">
+                                <h4>📋 실제 정부기관 보도자료 바로가기</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                                    <a href="https://www.fsc.go.kr/no010101" target="_blank" class="agency-link">
+                                        💰 금융위원회 보도자료
+                                    </a>
+                                    <a href="https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218" target="_blank" class="agency-link">
+                                        🏦 금융감독원 보도자료
+                                    </a>
+                                    <a href="https://www.ftc.go.kr/www/selectReportList.do?key=10&pageUnit=10&searchCnd=&searchKrwd=" target="_blank" class="agency-link">
+                                        ⚖️ 공정거래위원회 보도자료
+                                    </a>
+                                </div>
+                            </div>
+                        `,
+                        'fsc': '<a href="https://www.fsc.go.kr/no010101" target="_blank" class="agency-link">💰 금융위원회 보도자료 바로가기</a>',
+                        'fss': '<a href="https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218" target="_blank" class="agency-link">🏦 금융감독원 보도자료 바로가기</a>',
+                        'ftc': '<a href="https://www.ftc.go.kr/www/selectReportList.do?key=10&pageUnit=10&searchCnd=&searchKrwd=" target="_blank" class="agency-link">⚖️ 공정거래위원회 보도자료 바로가기</a>'
+                    };
+                    
                     newsList.innerHTML = `
                         <div class="welcome-message">
-                            <h3>📋 보도자료 없음</h3>
-                            <p>선택한 기관의 보도자료가 없습니다. 새로고침을 시도해주세요.</p>
+                            <h3>📋 저장된 보도자료 없음</h3>
+                            <p>선택한 기관의 저장된 보도자료가 없습니다.</p>
+                            <p>아래 링크를 통해 실제 정부기관 보도자료를 확인하세요.</p>
+                            ${agencyLinks[currentAgency] || agencyLinks['all']}
                         </div>
                     `;
                     document.getElementById('government-pagination').style.display = 'none';
                     return;
                 }
                 
-                // 뉴스 카드 생성 (가로형 레이아웃)
-                const newsCards = newsData.map(item => `
-                    <div class="government-news-card">
+                // 뉴스 카드 생성 (클릭 가능한 가로형 레이아웃)
+                const governmentNewsContainer = document.createElement('div');
+                governmentNewsContainer.className = 'government-news-list';
+                
+                newsData.forEach(item => {
+                    const newsCard = document.createElement('div');
+                    newsCard.className = 'government-news-card';
+                    newsCard.style.cursor = 'pointer';
+                    
+                    // 개선된 URL 생성
+                    const articleUrl = generateArticleUrl(item);
+                    
+                    newsCard.innerHTML = `
                         <div class="news-content">
                             <div class="news-header">
                                 <span class="news-source">${item.agency}</span>
                                 <span class="news-date">${item.date}</span>
                             </div>
-                            <h4 class="news-title">${item.title}</h4>
+                            <h4 class="news-title clickable-title">${item.title}</h4>
                             <p class="news-summary">${item.summary}</p>
                             <div class="news-footer">
-                                <a href="${item.url}" class="news-link" target="_blank" rel="noopener noreferrer">📖 원문 보기</a>
-                                <button class="save-btn" onclick="saveGovernmentArticle(${item.id}, '${item.agencyCode}')" title="저장">
+                                <a href="${articleUrl}" class="news-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">📖 원문 보기</a>
+                                <button class="save-btn" onclick="event.stopPropagation(); saveGovernmentArticle(${item.id}, '${item.agencyCode}')" title="저장">
                                     💾
                                 </button>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                    
+                    // 카드 전체 클릭 이벤트 - 개선된 URL 사용
+                    newsCard.addEventListener('click', function() {
+                        console.log(`정부 보도자료 카드 클릭: ${item.title} -> ${articleUrl}`);
+                        window.open(articleUrl, '_blank');
+                    });
+                    
+                    // 호버 효과 및 클릭 가이드 추가 (URL 타입에 따라)
+                    const isDirectUrl = item.url && (
+                        item.url.includes('view.do') || 
+                        item.url.includes('Detail.do') || 
+                        item.url.includes('/view/') || 
+                        item.url.includes('/detail/') ||
+                        item.url.includes('selectReportDetail.do') ||
+                        item.url.includes('?contentNo=') ||
+                        item.url.includes('?rptNo=')
+                    );
+                    
+                    if (isDirectUrl) {
+                        newsCard.title = '✅ 클릭하여 원문 보도자료로 바로 이동';
+                        newsCard.style.borderLeft = '4px solid #28a745';
+                    } else {
+                        newsCard.title = '🔍 클릭하여 관련 기사 검색 결과 보기';
+                        newsCard.style.borderLeft = '4px solid #ffc107';
+                    }
+                    
+                    governmentNewsContainer.appendChild(newsCard);
+                });
                 
-                newsList.innerHTML = `<div class="government-news-list">${newsCards}</div>`;
+                newsList.innerHTML = '';
+                newsList.appendChild(governmentNewsContainer);
                 
                 // 페이지네이션 표시
                 if (pagination.totalPages > 1) {
@@ -2331,10 +2562,159 @@
             document.getElementById('lastUpdateTime').textContent = timeString;
         }
 
+        // 개별 보도자료 URL 생성 함수 (정부 보도자료용) - 개선 버전
+        function generateArticleUrl(item) {
+            // 기존 URL이 개별 보도자료를 지시하는 경우 (확장된 패턴 검사)
+            if (item.url && (
+                item.url.includes('view.do') || 
+                item.url.includes('Detail.do') || 
+                item.url.includes('/view/') || 
+                item.url.includes('/detail/') ||
+                item.url.includes('selectReportDetail.do') ||
+                item.url.includes('/read.') ||
+                item.url.includes('?contentNo=') ||
+                item.url.includes('?rptNo=')
+            )) {
+                console.log(`정부 보도자료 직접 링크 사용: ${item.url}`);
+                return item.url;
+            }
+            
+            console.log(`정부 보도자료 검색 링크 생성 시작: "${item.title}"`);
+            
+            // 제목에서 핵심 키워드 추출
+            const titleKeywords = item.title.replace(/- \d+월 \d+일$/, '').trim().split(' ');
+            const mainKeyword = titleKeywords[0] || '보도자료';
+            
+            // 날짜 정보 추출 (publishedAt 또는 제목에서)
+            let searchDate = '';
+            if (item.publishedAt) {
+                const date = new Date(item.publishedAt);
+                searchDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+            
+            // 기관별 검색 URL 생성 (더 정확한 검색을 위해)
+            let searchUrl;
+            const encodedKeyword = encodeURIComponent(mainKeyword);
+            const encodedAgency = encodeURIComponent(item.agency);
+            const encodedDate = encodeURIComponent(searchDate);
+            
+            switch (item.agencyCode) {
+                case 'fsc':
+                    // 금융위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fsc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'fss':
+                    // 금융감독원 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fss.or.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'ftc':
+                    // 공정거래위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:ftc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                default:
+                    // 기본 네이버 뉴스 검색
+                    searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}&sort=1`;
+            }
+            
+            console.log(`정부 보도자료 최종 검색 URL: ${searchUrl}`);
+            return searchUrl;
+        }
+        
+        // 빠른 검색용 개선된 URL 생성 함수
+        function generateQuickSearchUrl(article, searchKeyword) {
+            // 기존 URL이 이미 직접 기사 링크인 경우
+            if (article.url && (article.url.includes('news.naver.com/main/read') || article.url.includes('/article/') || article.url.includes('/view/'))) {
+                return article.url;
+            }
+            
+            // 제목에서 핵심 키워드 추출 (부제목 제거)
+            let cleanTitle = article.title.replace(/ - .*$/, '').trim(); // 부제목 제거
+            cleanTitle = cleanTitle.replace(/\.\.\..*$/, '').trim(); // 생략 부엄 제거
+            
+            // 제목의 주요 키워드 추출 (2-3개 주요 단어)
+            const titleWords = cleanTitle.split(' ').filter(word => word.length > 1); // 1글자 단어 제외
+            const keyTitleWords = titleWords.slice(0, 3).join(' '); // 주요 3개 단어
+            
+            // 날짜 정보 추출
+            let searchDate = '';
+            if (article.publishedAt) {
+                try {
+                    // 다양한 날짜 형식 지원
+                    let dateObj;
+                    if (typeof article.publishedAt === 'string') {
+                        // '에 대한 상세 정보'를 제거하고 날짜만 추출
+                        const dateStr = article.publishedAt.replace(/에 대한 .*$/, '').trim();
+                        dateObj = new Date(dateStr);
+                    } else {
+                        dateObj = new Date(article.publishedAt);
+                    }
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        searchDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+                    }
+                } catch (error) {
+                    console.warn('날짜 파싱 오류:', error);
+                }
+            }
+            
+            // 검색 전략: 원래 검색 키워드 + 제목 키워드 + 날짜
+            const searchParts = [];
+            
+            // 1. 원래 검색 키워드 추가
+            if (searchKeyword && searchKeyword.trim()) {
+                searchParts.push(searchKeyword.trim());
+            }
+            
+            // 2. 제목의 핵심 키워드 추가
+            if (keyTitleWords && keyTitleWords !== searchKeyword) {
+                searchParts.push(keyTitleWords);
+            }
+            
+            // 3. 날짜 정보 추가 (선택적)
+            if (searchDate) {
+                searchParts.push(searchDate);
+            }
+            
+            // 최종 검색 쿼리 생성
+            const finalSearchQuery = searchParts.join(' ').trim();
+            
+            // 네이버 뉴스 검색 URL 생성 (최신순 정렬)
+            const searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(finalSearchQuery)}&sort=1`;
+            
+            console.log(`빠른 검색 URL 생성: "${article.title}" -> "${finalSearchQuery}" -> ${searchUrl}`);
+            return searchUrl;
+        }
+        
         // 정부 탭 초기화 (API 기반)
         async function initGovernmentTab() {
+            console.log('🏦 정부 보도자료 탭 초기화 시작...');
             updateLastUpdateTime();
-            await displayGovernmentNews();
+            
+            // 기본 크점 상태로 재설정
+            currentAgency = 'all';
+            currentGovernmentPage = 1;
+            
+            try {
+                await displayGovernmentNews();
+                console.log('🏦 정부 보도자료 탭 초기화 완료');
+            } catch (error) {
+                console.error('🏦 정부 보도자료 탭 초기화 오류:', error);
+            }
         }
     </script>
 </body>

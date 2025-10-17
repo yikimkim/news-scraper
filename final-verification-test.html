@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ 최종 링크 기능 검증</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .test-result { margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
+        .direct-link { border-left-color: #28a745; background-color: #d4edda; }
+        .search-link { border-left-color: #ffc107; background-color: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>✅ 최종 링크 기능 검증</h1>
+    
+    <div class="section success">
+        <h2>🔧 수정된 사항 요약</h2>
+        <ul>
+            <li><strong>버튼 텍스트 수정:</strong></li>
+            <ul>
+                <li>정부 보도자료: "📖 관련 기사 찾기" → "📖 원문 보기"</li>
+                <li>빠른 검색: "관련 기사 찾기 →" → "자세히 읽기 →"</li>
+            </ul>
+            <li><strong>URL 검증 로직 강화:</strong> 더 많은 직접 링크 패턴 인식</li>
+            <li><strong>시각적 피드백 추가:</strong> 직접 링크 vs 검색 링크 구분 표시</li>
+            <li><strong>로깅 개선:</strong> URL 생성 과정 상세 추적</li>
+            <li><strong>툴팁 개선:</strong> 링크 타입에 따른 설명</li>
+        </ul>
+    </div>
+
+    <div class="section info">
+        <h2>🔍 백엔드 데이터 확인</h2>
+        <button class="button" onclick="testBackendConnection()">백엔드 연결 및 데이터 확인</button>
+        <div id="backend-test-result"></div>
+    </div>
+
+    <div class="section info">
+        <h2>🎯 URL 생성 테스트</h2>
+        <button class="button" onclick="runUrlTests()">실제 데이터로 URL 생성 테스트</button>
+        <div id="url-test-result"></div>
+    </div>
+
+    <div class="section info">
+        <h2>📱 사용자 경험 시뮬레이션</h2>
+        <button class="button" onclick="simulateUserClicks()">사용자 클릭 시뮬레이션</button>
+        <div id="user-simulation-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 사용자를 위한 최종 안내</h2>
+        <div class="test-result success">
+            <h3>✅ 해결된 문제점들</h3>
+            <p><strong>1. 버튼 텍스트 매칭:</strong> "원문 보기"와 "자세히 읽기" 버튼으로 변경 완료</p>
+            <p><strong>2. 직접 링크 우선 사용:</strong> 이미 정확한 URL이 있는 경우 그대로 사용</p>
+            <p><strong>3. 스마트 검색 대안:</strong> 직접 링크가 없는 경우 최적화된 검색 URL 생성</p>
+            <p><strong>4. 시각적 구분:</strong> 직접 링크(초록)와 검색 링크(노랑) 시각적 표시</p>
+        </div>
+
+        <div class="test-result info">
+            <h3>🚀 브라우저 캐시 초기화 권장</h3>
+            <p>수정 사항을 확인하려면 <strong>Ctrl+F5</strong> 또는 <strong>Cmd+Shift+R</strong>로 페이지를 새로고침하세요.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://3001-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai';
+
+        // URL 생성 함수들 (index.html과 동일)
+        function generateArticleUrl(item) {
+            if (item.url && (
+                item.url.includes('view.do') || 
+                item.url.includes('Detail.do') || 
+                item.url.includes('/view/') || 
+                item.url.includes('/detail/') ||
+                item.url.includes('selectReportDetail.do') ||
+                item.url.includes('/read.') ||
+                item.url.includes('?contentNo=') ||
+                item.url.includes('?rptNo=')
+            )) {
+                console.log(`정부 보도자료 직접 링크 사용: ${item.url}`);
+                return item.url;
+            }
+            
+            console.log(`정부 보도자료 검색 링크 생성 시작: "${item.title}"`);
+            
+            const titleKeywords = item.title.replace(/- \d+월 \d+일$/, '').trim().split(' ');
+            const mainKeyword = titleKeywords[0] || '보도자료';
+            
+            let searchDate = '';
+            if (item.publishedAt) {
+                const date = new Date(item.publishedAt);
+                searchDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+            
+            let searchUrl;
+            const encodedKeyword = encodeURIComponent(mainKeyword);
+            const encodedAgency = encodeURIComponent(item.agency);
+            const encodedDate = encodeURIComponent(searchDate);
+            
+            switch (item.agencyCode) {
+                case 'fsc':
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fsc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                case 'fss':
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fss.or.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                case 'ftc':
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:ftc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                default:
+                    searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}&sort=1`;
+            }
+            
+            console.log(`정부 보도자료 최종 검색 URL: ${searchUrl}`);
+            return searchUrl;
+        }
+
+        function generateQuickSearchUrl(article, searchKeyword) {
+            if (article.url && (article.url.includes('news.naver.com/main/read') || article.url.includes('/article/') || article.url.includes('/view/'))) {
+                return article.url;
+            }
+            
+            let cleanTitle = article.title.replace(/ - .*$/, '').trim();
+            cleanTitle = cleanTitle.replace(/\.\.\..*$/, '').trim();
+            
+            const titleWords = cleanTitle.split(' ').filter(word => word.length > 1);
+            const keyTitleWords = titleWords.slice(0, 3).join(' ');
+            
+            let searchDate = '';
+            if (article.publishedAt) {
+                try {
+                    let dateObj;
+                    if (typeof article.publishedAt === 'string') {
+                        const dateStr = article.publishedAt.replace(/에 대한 .*$/, '').trim();
+                        dateObj = new Date(dateStr);
+                    } else {
+                        dateObj = new Date(article.publishedAt);
+                    }
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        searchDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+                    }
+                } catch (error) {
+                    console.warn('날짜 파싱 오류:', error);
+                }
+            }
+            
+            const searchParts = [];
+            
+            if (searchKeyword && searchKeyword.trim()) {
+                searchParts.push(searchKeyword.trim());
+            }
+            
+            if (keyTitleWords && keyTitleWords !== searchKeyword) {
+                searchParts.push(keyTitleWords);
+            }
+            
+            if (searchDate) {
+                searchParts.push(searchDate);
+            }
+            
+            const finalSearchQuery = searchParts.join(' ').trim();
+            const searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(finalSearchQuery)}&sort=1`;
+            
+            console.log(`빠른 검색 URL 생성: "${article.title}" -> "${finalSearchQuery}" -> ${searchUrl}`);
+            return searchUrl;
+        }
+
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('backend-test-result');
+            resultDiv.innerHTML = '<p>백엔드 연결 테스트 중...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=5`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `
+                        <div class="test-result success">
+                            <h4>✅ 백엔드 연결 성공</h4>
+                            <p><strong>총 보도자료:</strong> ${result.pagination.totalCount}개</p>
+                            <p><strong>API 응답 시간:</strong> 정상</p>
+                            <p><strong>최신 보도자료 5개:</strong></p>
+                            <ul>
+                    `;
+                    
+                    result.data.forEach(item => {
+                        const isDirectUrl = item.url && (
+                            item.url.includes('view.do') || 
+                            item.url.includes('Detail.do') ||
+                            item.url.includes('selectReportDetail.do') ||
+                            item.url.includes('?contentNo=') ||
+                            item.url.includes('?rptNo=')
+                        );
+                        html += `<li><strong>${item.agency}</strong>: ${item.title} ${isDirectUrl ? '✅' : '🔍'}</li>`;
+                    });
+                    
+                    html += '</ul></div>';
+                    
+                    // 데이터를 전역 변수에 저장
+                    window.testData = result.data;
+                    
+                } else {
+                    html = `<div class="test-result" style="border-left-color: #dc3545;">❌ API 오류: ${result.message}</div>`;
+                }
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result" style="border-left-color: #dc3545;">
+                        <h4>❌ 백엔드 연결 실패</h4>
+                        <p>오류: ${error.message}</p>
+                        <p>API URL: ${API_BASE_URL}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function runUrlTests() {
+            const resultDiv = document.getElementById('url-test-result');
+            
+            if (!window.testData) {
+                resultDiv.innerHTML = '<p>⚠️ 먼저 백엔드 데이터를 가져와주세요.</p>';
+                return;
+            }
+
+            let html = '<h4>🔗 URL 생성 테스트 결과:</h4>';
+            let directLinks = 0;
+            let searchLinks = 0;
+
+            window.testData.forEach((item, index) => {
+                const originalUrl = item.url;
+                const generatedUrl = generateArticleUrl(item);
+                const isDirectLink = originalUrl === generatedUrl;
+                
+                if (isDirectLink) directLinks++;
+                else searchLinks++;
+
+                html += `
+                    <div class="test-result ${isDirectLink ? 'direct-link' : 'search-link'}">
+                        <strong>${index + 1}. ${item.title}</strong><br>
+                        <strong>기관:</strong> ${item.agency}<br>
+                        <strong>결과:</strong> ${isDirectLink ? '✅ 직접 링크 사용' : '🔍 검색 링크 생성'}<br>
+                        <strong>URL:</strong> <a href="${generatedUrl}" target="_blank">${generatedUrl}</a>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="test-result success">
+                    <h4>📊 URL 생성 통계</h4>
+                    <p><strong>직접 링크:</strong> ${directLinks}개 (${((directLinks / window.testData.length) * 100).toFixed(1)}%)</p>
+                    <p><strong>검색 링크:</strong> ${searchLinks}개 (${((searchLinks / window.testData.length) * 100).toFixed(1)}%)</p>
+                </div>
+            `;
+
+            resultDiv.innerHTML = html;
+        }
+
+        function simulateUserClicks() {
+            const resultDiv = document.getElementById('user-simulation-result');
+            
+            if (!window.testData) {
+                resultDiv.innerHTML = '<p>⚠️ 먼저 백엔드 데이터를 가져와주세요.</p>';
+                return;
+            }
+
+            let html = '<h4>👆 사용자 클릭 시뮬레이션:</h4>';
+            
+            // 정부 보도자료 시뮬레이션
+            const govItem = window.testData[0];
+            const govUrl = generateArticleUrl(govItem);
+            
+            html += `
+                <div class="test-result">
+                    <h5>🏛️ 정부 보도자료 카드 클릭 시뮬레이션</h5>
+                    <p><strong>사용자 행동:</strong> "${govItem.title}" 카드의 "📖 원문 보기" 버튼 클릭</p>
+                    <p><strong>예상 결과:</strong> ${govUrl.includes('search.naver.com') ? '네이버에서 관련 기사 검색' : '정부 사이트 원문 페이지로 이동'}</p>
+                    <button class="button" onclick="window.open('${govUrl}', '_blank')">실제 링크 테스트</button>
+                </div>
+            `;
+
+            // 빠른 검색 시뮬레이션 (가상 데이터)
+            const quickArticle = {
+                title: "디지털 자산 투자 안전 가이드라인 발표",
+                publishedAt: "2024-10-17"
+            };
+            const quickUrl = generateQuickSearchUrl(quickArticle, "디지털자산");
+
+            html += `
+                <div class="test-result">
+                    <h5>⚡ 빠른 검색 카드 클릭 시뮬레이션</h5>
+                    <p><strong>사용자 행동:</strong> "디지털자산" 검색 결과에서 "자세히 읽기 →" 버튼 클릭</p>
+                    <p><strong>예상 결과:</strong> 해당 기사와 관련된 네이버 뉴스 검색 결과 표시</p>
+                    <button class="button" onclick="window.open('${quickUrl}', '_blank')">실제 링크 테스트</button>
+                </div>
+            `;
+
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

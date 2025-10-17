@@ -1,0 +1,24 @@
+2025-10-17 04:00:00 [ERROR]: 뉴스 저장 오류:
+2025-10-17 04:00:00 [ERROR]: 금융위원회 스크래핑 오류:
+2025-10-17 04:00:00 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 04:00:00 [ERROR]: 뉴스 저장 오류:
+2025-10-17 04:00:00 [ERROR]: 금융감독원 스크래핑 오류:
+2025-10-17 04:00:00 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 04:00:00 [ERROR]: 뉴스 저장 오류:
+2025-10-17 04:00:00 [ERROR]: 공정거래위원회 스크래핑 오류:
+2025-10-17 04:00:00 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 04:00:00 [ERROR]:   - 금융위원회: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 04:00:00 [ERROR]:   - 금융감독원: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 04:00:00 [ERROR]:   - 공정거래위원회: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]: 뉴스 저장 오류:
+2025-10-17 06:16:31 [ERROR]: 금융위원회 스크래핑 오류:
+2025-10-17 06:16:31 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]: 뉴스 저장 오류:
+2025-10-17 06:16:31 [ERROR]: 금융감독원 스크래핑 오류:
+2025-10-17 06:16:31 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]: 뉴스 저장 오류:
+2025-10-17 06:16:31 [ERROR]: 공정거래위원회 스크래핑 오류:
+2025-10-17 06:16:31 [ERROR]: Error: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]:   - 금융위원회: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]:   - 금융감독원: SQLITE_READONLY: attempt to write a readonly database
+2025-10-17 06:16:31 [ERROR]:   - 공정거래위원회: SQLITE_READONLY: attempt to write a readonly database

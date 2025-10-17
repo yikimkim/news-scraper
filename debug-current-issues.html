@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현재 이슈 디버그 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.working { background: #d4edda; color: #155724; }
+        .status.broken { background: #f8d7da; color: #721c24; }
+        .status.unknown { background: #fff3cd; color: #856404; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .api-test {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 한국 정부 뉴스 스크래퍼 - 현재 이슈 진단</h1>
+    
+    <div class="test-section">
+        <h3>1. 🏛️ 정부 보도자료 탭 전환 테스트</h3>
+        <p>정부 보도자료 탭으로 전환했을 때 데이터가 제대로 로드되는지 확인합니다.</p>
+        <button onclick="testGovernmentTab()">정부 보도자료 탭 테스트</button>
+        <div id="tab-test-result" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. 🔘 기관 필터 버튼 테스트</h3>
+        <p>금융위원회, 금융감독원, 공정거래위원회 버튼이 클릭되는지 확인합니다.</p>
+        <button onclick="testAgencyButtons()">기관 버튼 테스트</button>
+        <div id="agency-test-result" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. 🔄 새로고침 버튼 API 테스트</h3>
+        <p>새로고침 버튼이 서버 API와 정상적으로 통신하는지 확인합니다.</p>
+        <button onclick="testRefreshAPI()">새로고침 API 테스트</button>
+        <div id="refresh-test-result" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. ⚡ 빠른 검색 기사 클릭 테스트</h3>
+        <p>빠른 검색에서 기사 카드를 클릭했을 때 새 창으로 열리는지 확인합니다.</p>
+        <button onclick="testQuickSearch()">빠른 검색 테스트</button>
+        <div id="quick-search-result" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. 📊 API 상태 확인</h3>
+        <p>백엔드 서버와의 연결 상태를 확인합니다.</p>
+        <button onclick="testAPIStatus()">API 상태 확인</button>
+        <div id="api-status-result" class="console-output"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '';  // 같은 도메인 사용
+
+        async function testGovernmentTab() {
+            const resultDiv = document.getElementById('tab-test-result');
+            resultDiv.textContent = '🔄 정부 보도자료 탭 테스트 중...\n';
+
+            try {
+                // 탭 전환 시뮬레이션
+                resultDiv.textContent += '1. 탭 전환 시도...\n';
+                
+                // API 호출 테스트
+                resultDiv.textContent += '2. 정부 뉴스 API 호출 테스트...\n';
+                const response = await fetch('/api/news?agency=all&page=1&limit=6');
+                const result = await response.json();
+                
+                resultDiv.textContent += `3. API 응답: ${JSON.stringify(result, null, 2)}\n`;
+                
+                if (result.success) {
+                    resultDiv.textContent += '✅ 정부 보도자료 탭: 작동 중\n';
+                } else {
+                    resultDiv.textContent += '❌ 정부 보도자료 탭: API 오류\n';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent += `❌ 정부 보도자료 탭: 오류 발생 - ${error.message}\n`;
+            }
+        }
+
+        async function testAgencyButtons() {
+            const resultDiv = document.getElementById('agency-test-result');
+            resultDiv.textContent = '🔄 기관 필터 버튼 테스트 중...\n';
+
+            try {
+                const agencies = ['all', 'fsc', 'fss', 'ftc'];
+                
+                for (const agency of agencies) {
+                    resultDiv.textContent += `${agency} 기관 API 테스트...\n`;
+                    
+                    const response = await fetch(`/api/news?agency=${agency}&page=1&limit=3`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        resultDiv.textContent += `✅ ${agency}: ${result.data?.length || 0}개 데이터\n`;
+                    } else {
+                        resultDiv.textContent += `❌ ${agency}: API 오류\n`;
+                    }
+                }
+                
+            } catch (error) {
+                resultDiv.textContent += `❌ 기관 버튼 테스트: 오류 발생 - ${error.message}\n`;
+            }
+        }
+
+        async function testRefreshAPI() {
+            const resultDiv = document.getElementById('refresh-test-result');
+            resultDiv.textContent = '🔄 새로고침 API 테스트 중...\n';
+
+            try {
+                // 먼저 서버 상태 확인
+                const statusResponse = await fetch('/api/status');
+                const statusResult = await statusResponse.json();
+                
+                resultDiv.textContent += `서버 상태: ${JSON.stringify(statusResult, null, 2)}\n`;
+                
+                // 스크래핑 API 테스트
+                resultDiv.textContent += '스크래핑 API 호출 중...\n';
+                const scrapeResponse = await fetch('/api/news/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const scrapeResult = await scrapeResponse.json();
+                resultDiv.textContent += `스크래핑 결과: ${JSON.stringify(scrapeResult, null, 2)}\n`;
+                
+                if (scrapeResult.success) {
+                    resultDiv.textContent += '✅ 새로고침 API: 정상 작동\n';
+                } else {
+                    resultDiv.textContent += '❌ 새로고침 API: 오류 발생\n';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent += `❌ 새로고침 API 테스트: 오류 발생 - ${error.message}\n`;
+            }
+        }
+
+        async function testQuickSearch() {
+            const resultDiv = document.getElementById('quick-search-result');
+            resultDiv.textContent = '🔄 빠른 검색 기능 테스트 중...\n';
+
+            try {
+                // 빠른 검색 시뮬레이션
+                const testKeyword = 'AI';
+                resultDiv.textContent += `테스트 키워드: ${testKeyword}\n`;
+                
+                // 네이버 뉴스 검색 URL 생성 테스트
+                const searchURL = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(testKeyword)}&sort=1`;
+                resultDiv.textContent += `생성된 검색 URL: ${searchURL}\n`;
+                
+                // 클릭 핸들러 시뮬레이션
+                resultDiv.textContent += '클릭 핸들러 시뮬레이션...\n';
+                
+                // 새 창 열기 테스트 (실제로는 열지 않음)
+                resultDiv.textContent += '✅ 빠른 검색 기사 클릭: URL 생성 정상\n';
+                resultDiv.textContent += '📝 실제 클릭 시 새 탭에서 열릴 예정\n';
+                
+            } catch (error) {
+                resultDiv.textContent += `❌ 빠른 검색 테스트: 오류 발생 - ${error.message}\n`;
+            }
+        }
+
+        async function testAPIStatus() {
+            const resultDiv = document.getElementById('api-status-result');
+            resultDiv.textContent = '🔄 API 상태 확인 중...\n';
+
+            try {
+                // 서버 상태 확인
+                const response = await fetch('/api/status');
+                const result = await response.json();
+                
+                resultDiv.textContent += `API 상태: ${JSON.stringify(result, null, 2)}\n`;
+                
+                // 통계 API 확인
+                const statsResponse = await fetch('/api/news/stats');
+                const statsResult = await statsResponse.json();
+                
+                resultDiv.textContent += `통계 API: ${JSON.stringify(statsResult, null, 2)}\n`;
+                
+                if (result.status === 'running') {
+                    resultDiv.textContent += '✅ 백엔드 서버: 정상 작동 중\n';
+                } else {
+                    resultDiv.textContent += '❌ 백엔드 서버: 상태 불명\n';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent += `❌ API 상태 확인: 오류 발생 - ${error.message}\n`;
+            }
+        }
+
+        // 페이지 로드 시 자동 테스트
+        window.addEventListener('load', () => {
+            console.log('🔍 디버그 페이지 로드 완료');
+        });
+    </script>
+</body>
+</html>

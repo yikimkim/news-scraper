@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직접 기능 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>뉴스 스크래퍼 기능 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 정부 보도자료 API 테스트</h2>
+        <button onclick="testGovernmentAPI()">API 테스트 실행</button>
+        <div id="api-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 스크래핑 기능 테스트</h2>
+        <button onclick="testScraping()">수동 스크래핑 실행</button>
+        <div id="scraping-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 키워드 시스템 테스트</h2>
+        <input id="test-keyword" type="text" placeholder="테스트할 키워드 입력" value="금융">
+        <button onclick="testKeywordSystem()">키워드 시스템 테스트</button>
+        <div id="keyword-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. 메인 사이트 접근성 테스트</h2>
+        <button onclick="testMainSite()">메인 사이트 열기</button>
+        <div id="main-site-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname.includes('sandbox') || window.location.hostname.includes('localhost') 
+            ? `${window.location.protocol}//${window.location.hostname}`
+            : '/api';
+
+        async function testGovernmentAPI() {
+            const result = document.getElementById('api-result');
+            result.innerHTML = '테스트 중...';
+            result.className = 'result';
+            
+            try {
+                console.log('🧪 정부 보도자료 API 테스트 시작');
+                
+                // 뉴스 목록 API 테스트
+                const newsResponse = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=3`);
+                const newsResult = await newsResponse.json();
+                
+                // 통계 API 테스트
+                const statsResponse = await fetch(`${API_BASE_URL}/api/news/stats`);
+                const statsResult = await statsResponse.json();
+                
+                if (newsResult.success && statsResult.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✅ API 테스트 성공<br>
+                            • 뉴스 데이터: ${newsResult.data.length}건<br>
+                            • 전체 통계: ${statsResult.data.total}건<br>
+                            • 오늘 수집: ${statsResult.data.today}건<br>
+                            • 최신 뉴스: ${newsResult.data[0]?.title}
+                        </div>
+                    `;
+                    result.className = 'result success';
+                } else {
+                    throw new Error('API 응답에 success: false');
+                }
+                
+            } catch (error) {
+                console.error('API 테스트 오류:', error);
+                result.innerHTML = `<div class="error">❌ API 테스트 실패: ${error.message}</div>`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testScraping() {
+            const result = document.getElementById('scraping-result');
+            result.innerHTML = '스크래핑 중... (최대 10초 소요)';
+            result.className = 'result';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/news/scrape`, {
+                    method: 'POST'
+                });
+                const scrapeResult = await response.json();
+                
+                if (scrapeResult.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✅ 스크래핑 성공<br>
+                            • 새로 수집: ${scrapeResult.data.newItems}건<br>
+                            • 총 처리: ${scrapeResult.data.totalProcessed}건<br>
+                            • 소요시간: ${scrapeResult.data.duration}초
+                        </div>
+                    `;
+                    result.className = 'result success';
+                } else {
+                    throw new Error(scrapeResult.message || '스크래핑 실패');
+                }
+                
+            } catch (error) {
+                console.error('스크래핑 테스트 오류:', error);
+                result.innerHTML = `<div class="error">❌ 스크래핑 실패: ${error.message}</div>`;
+                result.className = 'result error';
+            }
+        }
+
+        function testKeywordSystem() {
+            const result = document.getElementById('keyword-result');
+            const keyword = document.getElementById('test-keyword').value;
+            
+            if (!keyword) {
+                result.innerHTML = '<div class="error">❌ 키워드를 입력하세요</div>';
+                return;
+            }
+            
+            try {
+                // localStorage 키워드 시스템 테스트
+                let keywords = JSON.parse(localStorage.getItem('newsKeywords') || '[]');
+                let fixedKeywords = JSON.parse(localStorage.getItem('fixedKeywords') || '[]');
+                let savedArticles = JSON.parse(localStorage.getItem('savedArticles') || '{}');
+                
+                // 키워드 추가 테스트
+                if (!keywords.includes(keyword)) {
+                    keywords.push(keyword);
+                    savedArticles[keyword] = [];
+                }
+                
+                if (!fixedKeywords.includes(keyword)) {
+                    fixedKeywords.push(keyword);
+                }
+                
+                // localStorage 저장
+                localStorage.setItem('newsKeywords', JSON.stringify(keywords));
+                localStorage.setItem('fixedKeywords', JSON.stringify(fixedKeywords));
+                localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ 키워드 시스템 테스트 성공<br>
+                        • 추가된 키워드: "${keyword}"<br>
+                        • 현재 저장된 키워드: ${keywords.length}개<br>
+                        • 고정 키워드: ${fixedKeywords.length}개
+                    </div>
+                `;
+                result.className = 'result success';
+                
+            } catch (error) {
+                console.error('키워드 시스템 오류:', error);
+                result.innerHTML = `<div class="error">❌ 키워드 시스템 오류: ${error.message}</div>`;
+                result.className = 'result error';
+            }
+        }
+
+        function testMainSite() {
+            const result = document.getElementById('main-site-result');
+            result.innerHTML = '메인 사이트로 이동합니다...';
+            
+            // 새 탭에서 메인 사이트 열기
+            const mainUrl = window.location.origin + '/';
+            window.open(mainUrl, '_blank');
+            
+            result.innerHTML = `
+                <div class="success">
+                    ✅ 메인 사이트가 새 탭에서 열렸습니다<br>
+                    URL: <a href="${mainUrl}" target="_blank">${mainUrl}</a>
+                </div>
+            `;
+            result.className = 'result success';
+        }
+
+        // 페이지 로드 시 기본 정보 표시
+        window.addEventListener('load', () => {
+            console.log('🧪 테스트 페이지 로드됨');
+            console.log('API_BASE_URL:', API_BASE_URL);
+            console.log('현재 시간:', new Date().toLocaleString());
+        });
+    </script>
+</body>
+</html>

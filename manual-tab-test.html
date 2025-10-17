@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수동 탭 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-controls { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-button { 
+            padding: 15px 25px; 
+            margin: 10px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; }
+        .success { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 수동 탭 전환 테스트</h1>
+    
+    <div class="warning">
+        <h3>⚠️ 중요 안내</h3>
+        <p>이 테스트는 실제 사용자가 탭을 클릭했을 때 발생할 수 있는 문제를 진단합니다.</p>
+        <p>아래 버튼들을 순서대로 클릭하여 탭 전환이 제대로 작동하는지 확인하세요.</p>
+    </div>
+
+    <div class="test-controls">
+        <h3>1단계: 새 창에서 메인 사이트 열기</h3>
+        <button class="test-button" onclick="openMainSite()">
+            🌐 메인 사이트 새 창에서 열기
+        </button>
+        <p id="step1-result">새 창이 열리면 다음 단계로 진행하세요.</p>
+    </div>
+
+    <div class="test-controls">
+        <h3>2단계: 브라우저 콘솔에서 직접 함수 호출</h3>
+        <p>새로 열린 창에서 F12를 눌러 개발자 도구를 열고, Console 탭에서 다음 명령어들을 입력하세요:</p>
+        <div style="background: #f1f3f4; padding: 10px; font-family: monospace; margin: 10px 0;">
+            <strong>내 게시판 테스트:</strong><br>
+            switchTab('boards')<br><br>
+            <strong>정부 보도자료 테스트:</strong><br>
+            switchTab('government')
+        </div>
+        <button class="test-button" onclick="copyCommands()">📋 명령어 복사하기</button>
+    </div>
+
+    <div class="test-controls">
+        <h3>3단계: 실제 탭 버튼 클릭</h3>
+        <p>새로 열린 창에서 실제로 다음 탭들을 클릭해보세요:</p>
+        <ul>
+            <li><strong>📂 내 게시판</strong> - 키워드 목록이 나타나야 합니다</li>
+            <li><strong>🏛️ 정부 보도자료</strong> - 실시간 뉴스 목록이 나타나야 합니다</li>
+        </ul>
+    </div>
+
+    <div class="test-controls">
+        <h3>4단계: 문제 상황별 해결책</h3>
+        <div id="solutions">
+            <h4>만약 탭 전환이 되지 않는다면:</h4>
+            <ol>
+                <li><strong>JavaScript 오류 확인:</strong> F12 → Console에서 빨간색 오류 메시지 확인</li>
+                <li><strong>함수 존재 확인:</strong> Console에서 <code>typeof switchTab</code> 입력</li>
+                <li><strong>DOM 요소 확인:</strong> Console에서 <code>document.querySelectorAll('.nav-tab')</code> 입력</li>
+                <li><strong>CSS 문제 확인:</strong> Elements 탭에서 탭 컨텐츠의 display 속성 확인</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="success">
+        <h3>✅ 예상 결과</h3>
+        <p><strong>내 게시판:</strong> 기본 키워드(금융, 경제, 정책)가 표시되고 각각 (0개 기사)로 나타남</p>
+        <p><strong>정부 보도자료:</strong> 실제 정부기관 보도자료 목록이 로딩되어 6개 정도의 뉴스가 표시됨</p>
+    </div>
+
+    <div style="margin-top: 30px; padding: 20px; background: #e9ecef;">
+        <h3>🚨 긴급 수정이 필요한 경우</h3>
+        <button class="test-button" onclick="showFixOptions()" style="background: #dc3545;">
+            🔧 탭 전환 문제 즉시 수정
+        </button>
+        <div id="fix-options" style="display: none; margin-top: 15px;">
+            <p>다음 중 하나의 방법을 사용하여 문제를 해결할 수 있습니다:</p>
+            <button class="test-button" onclick="createSimpleVersion()">📝 간단한 탭 버전 생성</button>
+            <button class="test-button" onclick="debugCurrentVersion()">🔍 현재 버전 상세 디버그</button>
+        </div>
+    </div>
+
+    <script>
+        function openMainSite() {
+            const mainWindow = window.open('/', '_blank', 'width=1200,height=800');
+            document.getElementById('step1-result').innerHTML = '✅ 새 창이 열렸습니다. 해당 창에서 탭 전환을 테스트하세요.';
+            
+            // 5초 후 자동으로 확인 메시지
+            setTimeout(() => {
+                if (!mainWindow || mainWindow.closed) {
+                    document.getElementById('step1-result').innerHTML = '❌ 창이 닫혔거나 팝업이 차단되었습니다.';
+                } else {
+                    document.getElementById('step1-result').innerHTML = '✅ 새 창에서 메인 사이트가 로드되었습니다. 탭 버튼들을 클릭해보세요.';
+                }
+            }, 5000);
+        }
+
+        function copyCommands() {
+            const commands = `switchTab('boards')
+switchTab('government')`;
+            
+            navigator.clipboard.writeText(commands).then(() => {
+                alert('✅ 명령어가 클립보드에 복사되었습니다!\n\n새 창의 Console에서 Ctrl+V로 붙여넣기 하세요.');
+            }).catch(() => {
+                alert('명령어:\n\nswitchTab(\'boards\')\nswitchTab(\'government\')');
+            });
+        }
+
+        function showFixOptions() {
+            const fixOptions = document.getElementById('fix-options');
+            fixOptions.style.display = fixOptions.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function createSimpleVersion() {
+            alert('간단한 탭 버전을 생성합니다...\n\n이 기능은 개발자가 구현해야 합니다.');
+        }
+
+        function debugCurrentVersion() {
+            // 현재 버전의 상세한 디버그 정보를 새 창에서 표시
+            const debugWindow = window.open('', '_blank', 'width=800,height=600');
+            debugWindow.document.write(`
+                <html>
+                    <head><title>디버그 정보</title></head>
+                    <body style="font-family: Arial; padding: 20px;">
+                        <h2>현재 사이트 디버그 정보</h2>
+                        <p>메인 사이트: <a href="${window.location.origin}/" target="_blank">${window.location.origin}/</a></p>
+                        <p>시간: ${new Date().toLocaleString()}</p>
+                        
+                        <h3>확인해야 할 항목들:</h3>
+                        <ol>
+                            <li>switchTab 함수가 정의되어 있는가?</li>
+                            <li>탭 버튼들이 올바른 onclick 속성을 가지고 있는가?</li>
+                            <li>탭 컨텐츠들이 올바른 ID를 가지고 있는가?</li>
+                            <li>CSS가 탭 전환을 방해하지 않는가?</li>
+                        </ol>
+
+                        <h3>테스트 방법:</h3>
+                        <p>1. 메인 사이트에서 F12를 누르세요</p>
+                        <p>2. Console 탭에서 다음을 입력하세요:</p>
+                        <pre style="background: #f5f5f5; padding: 10px;">
+typeof switchTab
+document.querySelectorAll('.nav-tab').length
+document.querySelectorAll('.tab-content').length
+                        </pre>
+                        
+                        <button onclick="window.close()">창 닫기</button>
+                    </body>
+                </html>
+            `);
+        }
+    </script>
+</body>
+</html>
