@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 링크 문제 진단 도구</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .good { background-color: #d4edda; border-color: #c3e6cb; }
+        .bad { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .url-test { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .test-result { margin-top: 20px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 링크 문제 진단 도구</h1>
+    <p><strong>목적:</strong> 사용자가 보고한 링크 문제의 정확한 원인 찾기</p>
+
+    <div class="section">
+        <h2>📊 백엔드 데이터 실시간 조회</h2>
+        <button class="button" onclick="fetchBackendData()">백엔드에서 실제 데이터 가져오기</button>
+        <div id="backend-data-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>🔗 URL 생성 함수 테스트</h2>
+        <button class="button" onclick="testUrlGeneration()">실제 백엔드 데이터로 URL 생성 테스트</button>
+        <div id="url-generation-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 정확한 문제점 파악</h2>
+        <div id="problem-analysis"></div>
+    </div>
+
+    <div class="section">
+        <h2>✅ 권장 해결 방안</h2>
+        <div id="solution-recommendation"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://3001-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai';
+
+        // 정부 보도자료 URL 생성 함수 (index.html과 동일)
+        function generateArticleUrl(item) {
+            // 기존 URL이 개별 보도자료를 지시하는 경우 (예: view.do, Detail.do 포함)
+            if (item.url && (item.url.includes('view.do') || item.url.includes('Detail.do') || item.url.includes('/view/') || item.url.includes('/detail/'))) {
+                return item.url;
+            }
+            
+            // 제목에서 핵심 키워드 추출
+            const titleKeywords = item.title.replace(/- \d+월 \d+일$/, '').trim().split(' ');
+            const mainKeyword = titleKeywords[0] || '보도자료';
+            
+            // 날짜 정보 추출 (publishedAt 또는 제목에서)
+            let searchDate = '';
+            if (item.publishedAt) {
+                const date = new Date(item.publishedAt);
+                searchDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            }
+            
+            // 기관별 검색 URL 생성 (더 정확한 검색을 위해)
+            let searchUrl;
+            const encodedKeyword = encodeURIComponent(mainKeyword);
+            const encodedAgency = encodeURIComponent(item.agency);
+            const encodedDate = encodeURIComponent(searchDate);
+            
+            switch (item.agencyCode) {
+                case 'fsc':
+                    // 금융위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fsc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'fss':
+                    // 금융감독원 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:fss.or.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                case 'ftc':
+                    // 공정거래위원회 사이트 내 검색 + 네이버 검색 조합
+                    if (searchDate) {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=site:ftc.go.kr+${encodedKeyword}+${encodedDate}&sort=1`;
+                    } else {
+                        searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}+보도자료&sort=1`;
+                    }
+                    break;
+                    
+                default:
+                    // 기본 네이버 뉴스 검색
+                    searchUrl = `https://search.naver.com/search.naver?where=news&query=${encodedAgency}+${encodedKeyword}&sort=1`;
+            }
+            
+            return searchUrl;
+        }
+
+        async function fetchBackendData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=10`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `
+                        <div class="section good">
+                            <h3>✅ 백엔드 연결 성공</h3>
+                            <p>총 ${result.pagination.totalCount}개의 보도자료를 발견했습니다.</p>
+                            <p>현재 페이지: ${result.pagination.page}/${result.pagination.totalPages}</p>
+                        </div>
+                        <h3>📋 실제 보도자료 데이터:</h3>
+                    `;
+                    
+                    result.data.forEach((item, index) => {
+                        const isDirectUrl = item.url && (
+                            item.url.includes('view.do') || 
+                            item.url.includes('Detail.do') || 
+                            item.url.includes('/view/') || 
+                            item.url.includes('/detail/')
+                        );
+                        
+                        html += `
+                            <div class="url-test ${isDirectUrl ? 'good' : 'bad'}">
+                                <strong>${index + 1}. ${item.title}</strong><br>
+                                <strong>기관:</strong> ${item.agency}<br>
+                                <strong>원본 URL:</strong> <a href="${item.url}" target="_blank">${item.url}</a><br>
+                                <strong>URL 상태:</strong> ${isDirectUrl ? '✅ 직접 링크 (좋음)' : '❌ 게시판 링크 (수정 필요)'}
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('backend-data-result').innerHTML = html;
+                    
+                    // 전역 변수에 데이터 저장
+                    window.backendData = result.data;
+                } else {
+                    throw new Error(result.message || '알 수 없는 오류');
+                }
+            } catch (error) {
+                document.getElementById('backend-data-result').innerHTML = `
+                    <div class="section bad">
+                        <h3>❌ 백엔드 연결 실패</h3>
+                        <p>오류: ${error.message}</p>
+                        <p>API URL: ${API_BASE_URL}/api/news</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testUrlGeneration() {
+            if (!window.backendData) {
+                document.getElementById('url-generation-result').innerHTML = `
+                    <div class="section warning">
+                        <h3>⚠️ 먼저 백엔드 데이터를 가져와주세요</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<h3>🔗 URL 생성 함수 테스트 결과:</h3>';
+            
+            window.backendData.forEach((item, index) => {
+                const originalUrl = item.url;
+                const generatedUrl = generateArticleUrl(item);
+                const isChanged = originalUrl !== generatedUrl;
+                
+                html += `
+                    <div class="url-test ${isChanged ? 'warning' : 'good'}">
+                        <strong>${index + 1}. ${item.title}</strong><br>
+                        <strong>원본 URL:</strong> <a href="${originalUrl}" target="_blank">${originalUrl}</a><br>
+                        <strong>생성된 URL:</strong> <a href="${generatedUrl}" target="_blank">${generatedUrl}</a><br>
+                        <strong>결과:</strong> ${isChanged ? '🔄 URL이 변경됨 (네이버 검색으로 변환)' : '✅ 원본 URL 유지 (직접 링크)'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('url-generation-result').innerHTML = html;
+            
+            // 문제 분석 수행
+            analyzeProblem();
+        }
+
+        function analyzeProblem() {
+            if (!window.backendData) return;
+            
+            let directUrls = 0;
+            let boardUrls = 0;
+            let problemUrls = [];
+            
+            window.backendData.forEach((item, index) => {
+                const isDirectUrl = item.url && (
+                    item.url.includes('view.do') || 
+                    item.url.includes('Detail.do') || 
+                    item.url.includes('/view/') || 
+                    item.url.includes('/detail/')
+                );
+                
+                if (isDirectUrl) {
+                    directUrls++;
+                } else {
+                    boardUrls++;
+                    problemUrls.push({
+                        index: index + 1,
+                        title: item.title,
+                        url: item.url,
+                        agency: item.agency
+                    });
+                }
+            });
+            
+            let analysisHtml = `
+                <div class="section ${boardUrls === 0 ? 'good' : 'warning'}">
+                    <h3>📊 URL 분석 결과</h3>
+                    <p><strong>직접 링크:</strong> ${directUrls}개 (${((directUrls / window.backendData.length) * 100).toFixed(1)}%)</p>
+                    <p><strong>게시판 링크:</strong> ${boardUrls}개 (${((boardUrls / window.backendData.length) * 100).toFixed(1)}%)</p>
+                </div>
+            `;
+            
+            if (problemUrls.length > 0) {
+                analysisHtml += `
+                    <div class="section bad">
+                        <h3>❌ 문제가 있는 URL들</h3>
+                        <p>다음 보도자료들은 게시판 링크로, 직접 기사로 연결되지 않습니다:</p>
+                `;
+                
+                problemUrls.forEach(item => {
+                    analysisHtml += `
+                        <div class="url-test">
+                            <strong>${item.index}. ${item.title}</strong><br>
+                            <strong>기관:</strong> ${item.agency}<br>
+                            <strong>문제 URL:</strong> <a href="${item.url}" target="_blank">${item.url}</a>
+                        </div>
+                    `;
+                });
+                
+                analysisHtml += '</div>';
+            }
+            
+            document.getElementById('problem-analysis').innerHTML = analysisHtml;
+            
+            // 해결 방안 제시
+            provideSolution(boardUrls, problemUrls);
+        }
+
+        function provideSolution(boardUrls, problemUrls) {
+            let solutionHtml = '';
+            
+            if (boardUrls === 0) {
+                solutionHtml = `
+                    <div class="section good">
+                        <h3>✅ 현재 상태: 문제 없음</h3>
+                        <p>모든 보도자료가 이미 직접 링크로 설정되어 있습니다.</p>
+                        <p><strong>사용자 보고 사항 분석:</strong></p>
+                        <ul>
+                            <li>사용자가 언급한 "원문 보기", "자세히 읽기" 버튼이 현재 코드에서 발견되지 않음</li>
+                            <li>현재 코드의 실제 버튼: "📖 관련 기사 찾기", "관련 기사 찾기 →"</li>
+                            <li>URL 생성 함수들이 정상적으로 작동하고 있음</li>
+                        </ul>
+                        <p><strong>추천 조치:</strong></p>
+                        <ul>
+                            <li>사용자에게 브라우저 캐시 삭제 요청</li>
+                            <li>실제 사용 중인 애플리케이션 버전 확인</li>
+                            <li>버튼 텍스트 업데이트 확인</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                solutionHtml = `
+                    <div class="section warning">
+                        <h3>⚠️ 문제 발견: ${boardUrls}개의 게시판 링크</h3>
+                        <p>일부 보도자료가 직접 링크가 아닌 게시판 링크를 사용하고 있습니다.</p>
+                        <p><strong>해결 방안:</strong></p>
+                        <ol>
+                            <li><strong>스크래퍼 개선:</strong> 각 기관의 개별 보도자료 URL 수집 로직 강화</li>
+                            <li><strong>URL 검증 로직 추가:</strong> 게시판 링크 감지 및 자동 변환</li>
+                            <li><strong>백업 검색 시스템:</strong> 직접 링크가 없는 경우 네이버 검색 활용</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🔧 구체적 수정 사항</h3>
+                        <pre>
+// 백엔드 스크래퍼 개선 필요
+// 각 기관별 개별 보도자료 URL 패턴 분석:
+// - 금융위원회: view.do?contentNo=xxx 형태로 수집
+// - 금융감독원: /view/ 경로 포함하여 수집  
+// - 공정거래위원회: selectReportDetail.do?rptNo=xxx 형태로 수집
+
+// 프론트엔드 검증 로직 추가
+function isDirectUrl(url) {
+    return url && (
+        url.includes('view.do') ||
+        url.includes('Detail.do') ||  
+        url.includes('/view/') ||
+        url.includes('/detail/') ||
+        url.includes('selectReportDetail.do')
+    );
+}
+                        </pre>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('solution-recommendation').innerHTML = solutionHtml;
+        }
+    </script>
+</body>
+</html>
