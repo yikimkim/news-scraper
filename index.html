@@ -998,7 +998,7 @@
                     <p>금융위원회, 금융감독원, 공정거래위원회의 최신 보도자료를 확인하세요</p>
                     <div class="update-info">
                         <span class="update-time">마지막 업데이트: <span id="lastUpdateTime">-</span></span>
-                        <button class="btn btn-secondary btn-small" onclick="refreshGovernmentNews()" id="refreshBtn">
+                        <button class="btn btn-secondary btn-small" id="refreshBtn">
                             <span id="refreshIcon">🔄</span> 새로고침
                         </button>
                     </div>
@@ -1006,10 +1006,10 @@
 
                 <!-- 기관 카테고리 선택 -->
                 <div class="agency-selector">
-                    <button class="agency-btn active" data-agency="all" onclick="selectAgency('all')">📊 전체</button>
-                    <button class="agency-btn" data-agency="fsc" onclick="selectAgency('fsc')">💰 금융위원회</button>
-                    <button class="agency-btn" data-agency="fss" onclick="selectAgency('fss')">🏦 금융감독원</button>
-                    <button class="agency-btn" data-agency="ftc" onclick="selectAgency('ftc')">⚖️ 공정거래위원회</button>
+                    <button class="agency-btn active" data-agency="all">📊 전체</button>
+                    <button class="agency-btn" data-agency="fsc">💰 금융위원회</button>
+                    <button class="agency-btn" data-agency="fss">🏦 금융감독원</button>
+                    <button class="agency-btn" data-agency="ftc">⚖️ 공정거래위원회</button>
                 </div>
 
                 <!-- 보도자료 통계 -->
@@ -1175,6 +1175,45 @@
                     console.warn('fixedKeyword 엘리먼트를 찾을 수 없습니다');
                 }
                 
+                // 📊 기관 필터 버튼들에 이벤트 리스너 추가
+                console.log('🏛️ 기관 필터 버튼 이벤트 리스너 설정 중...');
+                const agencyButtons = document.querySelectorAll('.agency-btn[data-agency]');
+                console.log(`발견된 기관 버튼 수: ${agencyButtons.length}`);
+                
+                agencyButtons.forEach(button => {
+                    const agency = button.getAttribute('data-agency');
+                    console.log(`기관 버튼 설정: ${agency} - ${button.textContent.trim()}`);
+                    
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log(`🏛️ 기관 버튼 클릭됨: ${agency}`);
+                        try {
+                            selectAgency(agency);
+                        } catch (error) {
+                            console.error(`기관 선택 오류 (${agency}):`, error);
+                        }
+                    });
+                });
+                
+                // 🔄 정부 보도자료 새로고침 버튼 이벤트 리스너 추가
+                console.log('🔄 새로고침 버튼 이벤트 리스너 설정 중...');
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        console.log('🔄 새로고침 버튼 클릭됨');
+                        try {
+                            await refreshGovernmentNews();
+                        } catch (error) {
+                            console.error('새로고침 오류:', error);
+                        }
+                    });
+                    console.log('✅ 새로고침 버튼 이벤트 리스너 설정 완료');
+                } else {
+                    console.warn('⚠️ refreshBtn 엘리먼트를 찾을 수 없습니다');
+                }
+                
+                console.log('✅ 모든 기관 필터 및 새로고침 버튼 이벤트 리스너 설정 완료');
                 console.log('DOM 초기화 완료!');
                 
                 // switchTab 함수 확인
