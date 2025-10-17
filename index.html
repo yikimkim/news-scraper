@@ -1094,26 +1094,49 @@
 
         // 탭 전환
         function switchTab(tabName) {
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // 클릭된 탭 버튼 활성화
-            const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            } else if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            if (tabName === 'boards') {
-                updateAllKeywordLists();
-            } else if (tabName === 'manage') {
-                updateAllKeywordLists();
-                updateStatistics();
-            } else if (tabName === 'government') {
-                initGovernmentTab();
+            try {
+                console.log('탭 전환:', tabName);
+                
+                // 모든 탭 버튼에서 active 클래스 제거
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                
+                // 모든 탭 컨텐츠에서 active 클래스 제거  
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 클릭된 탭 버튼 활성화
+                const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                } else if (event && event.target) {
+                    event.target.classList.add('active');
+                }
+                
+                // 해당 탭 컨텐츠 표시
+                const targetContent = document.getElementById(tabName + '-tab');
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                } else {
+                    console.error(`탭 컨텐츠를 찾을 수 없습니다: ${tabName}-tab`);
+                }
+                
+                // 탭별 초기화 함수 호출
+                if (tabName === 'boards') {
+                    updateAllKeywordLists();
+                    console.log('내 게시판 탭 활성화됨');
+                } else if (tabName === 'manage') {
+                    updateAllKeywordLists();
+                    updateStatistics();
+                    console.log('설정 탭 활성화됨');
+                } else if (tabName === 'government') {
+                    initGovernmentTab();
+                    console.log('정부 보도자료 탭 활성화됨');
+                } else if (tabName === 'quick') {
+                    updateAllKeywordLists();
+                    console.log('빠른 검색 탭 활성화됨');
+                }
+                
+            } catch (error) {
+                console.error('탭 전환 오류:', error);
             }
         }
 

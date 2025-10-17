@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# 뉴스 스크래퍼 - 정부 보도자료 수집 시스템
+Sitemap: https://3000-i0i3m0ak4ew6ttwalvn3w-c81df28e.sandbox.novita.ai/sitemap.xml
