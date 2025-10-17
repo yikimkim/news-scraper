@@ -925,11 +925,8 @@
                     <!-- 고정 키워드 버튼들이 여기에 표시됩니다 -->
                 </div>
                 
-                <div class="news-source-selector" id="newsSourceSelector" style="display: none;">
-                    <span style="font-weight: 600; margin-right: 10px;">뉴스 소스 선택:</span>
-                    <button class="source-btn active" data-source="naver">네이버</button>
-                    <button class="source-btn" data-source="daum">다음</button>
-                    <button class="source-btn" data-source="google">구글</button>
+                <div class="news-source-info" style="margin-top: 10px; padding: 8px 12px; background: #e3f2fd; border-radius: 5px; font-size: 0.9rem; color: #1976d2;">
+                    📰 <strong>뉴스 소스:</strong> 네이버 뉴스만 검색합니다
                 </div>
             </div>
 
@@ -945,11 +942,8 @@
                     </div>
                     <div class="input-group">
                         <label for="source">뉴스 소스</label>
-                        <select id="source" name="source">
-                            <option value="all">전체</option>
-                            <option value="naver">네이버 뉴스</option>
-                            <option value="daum">다음 뉴스</option>
-                            <option value="google">구글 뉴스</option>
+                        <select id="source" name="source" disabled style="background: #f5f5f5;">
+                            <option value="naver" selected>네이버 뉴스 (고정)</option>
                         </select>
                     </div>
                     <button type="submit" class="btn" style="align-self: flex-end;">🔍 검색</button>
@@ -1451,17 +1445,10 @@
             }
         }
 
-        // 뉴스 소스 선택기 설정
+        // 뉴스 소스 선택기 설정 (네이버 전용으로 간소화)
         function setupNewsSourceSelector() {
-            const selector = document.getElementById('newsSourceSelector');
-            const buttons = selector.querySelectorAll('.source-btn');
-            
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    buttons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+            // 네이버 뉴스만 사용하므로 별도 설정 불필요
+            console.log('뉴스 소스: 네이버 뉴스 전용');
         }
 
         // 고정 키워드 추가
@@ -1547,7 +1534,7 @@
             updateStatistics();
         }
 
-        // 고정 키워드 클릭 - 하단에 뉴스 검색 결과 표시
+        // 고정 키워드 클릭 - 하단에 뉴스 검색 결과 표시 (네이버 전용)
         function onFixedKeywordClick(keyword) {
             // 빠른 검색 탭에 있는지 확인
             const quickTab = document.getElementById('quick-tab');
@@ -1556,13 +1543,13 @@
                 switchTab('quick');
             }
             
-            // 기본 뉴스 소스를 'all'로 설정하여 검색
-            searchNews(keyword, 'all');
+            // 네이버 뉴스만 검색
+            searchNews(keyword, 'naver');
         }
 
-        // 고정 키워드 버튼에 마우스 오버 시 소스 선택기 표시
+        // 네이버 뉴스 전용으로 소스 선택기 불필요
         function showSourceSelector() {
-            document.getElementById('newsSourceSelector').style.display = 'flex';
+            // 네이버 뉴스만 사용하므로 별도 표시 불필요
         }
 
         // 모든 키워드 목록 업데이트
@@ -1928,7 +1915,7 @@
             searchResults.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 기사 저장
+        // 기사 저장 (중복 제거 강화)
         function saveArticle(index, searchKeyword) {
             const article = allArticles[index];
             
@@ -1938,10 +1925,15 @@
                 savedArticles[searchKeyword] = [];
             }
             
-            // 중복 체크
-            const existingArticle = savedArticles[searchKeyword].find(saved => saved.title === article.title);
-            if (existingArticle) {
-                alert('이미 저장된 기사입니다.');
+            // 강화된 중복 체크 (제목과 URL 모두 확인)
+            const isDuplicate = savedArticles[searchKeyword].some(saved => 
+                saved.title === article.title || 
+                saved.url === article.url ||
+                (saved.title.includes(article.title.slice(0, 20)) && saved.title.length > 20)
+            );
+            
+            if (isDuplicate) {
+                alert('이미 저장된 기사이거나 유사한 기사가 있습니다.');
                 return;
             }
             
@@ -1963,30 +1955,30 @@
             alert('기사가 저장되었습니다!');
         }
 
-        // 데모 뉴스 생성 (총 60개 - 10페이지 x 6개)
+        // 네이버 전용 뉴스 생성 (정확한 키워드만 사용)
         function generateDemoNews(keyword, source) {
-            // 더욱 다양한 뉴스 템플릿 생성
+            // 키워드만 사용하는 정확한 검색 결과 시뮬레이션
             const titleVariations = [
-                `${keyword} 관련 최신 뉴스`,
-                `${keyword} 산업 동향 분석`,
+                `${keyword} 최신 소식`,
+                `${keyword} 업계 동향`,
+                `${keyword} 전문가 분석`,
+                `${keyword} 정책 발표`,
+                `${keyword} 기업 소식`,
+                `${keyword} 시장 현황`,
+                `${keyword} 규제 소식`,
+                `${keyword} 연구 결과`,
+                `${keyword} 글로벌 동향`,
+                `${keyword} 투자 소식`,
+                `${keyword} 업계 뉴스`,
+                `${keyword} 정부 보도`,
+                `${keyword} 기술 소식`,
+                `${keyword} 경제 영향`,
+                `${keyword} 소비자 관심`,
+                `${keyword} 산업 전망`,
                 `${keyword} 전문가 의견`,
-                `${keyword} 정책 변화 소식`,
-                `${keyword} 기술 혁신 현황`,
-                `${keyword} 시장 전망`,
-                `${keyword} 규제 동향`,
-                `${keyword} 연구 성과`,
-                `${keyword} 글로벌 현황`,
-                `${keyword} 투자 동향`,
-                `${keyword} 트렌드 분석`,
-                `${keyword} 업계 현황`,
-                `${keyword} 정부 발표`,
-                `${keyword} 기업 동향`,
-                `${keyword} 소비자 반응`,
-                `${keyword} 미래 전망`,
-                `${keyword} 경쟁 현황`,
-                `${keyword} 협력 방안`,
-                `${keyword} 성장 가능성`,
-                `${keyword} 위험 요소`
+                `${keyword} 정책 변화`,
+                `${keyword} 시장 분석`,
+                `${keyword} 업계 반응`
             ];
 
             const suffixes = [
@@ -2018,72 +2010,71 @@
                 '미래', '도전', '기회', '위험', '대응'
             ];
 
-            const sourceTypes = ['연합뉴스', 'KBS', 'MBC', 'SBS', '조선일보', '중앙일보', 
-                               '동아일보', '한겨레', '경향신문', '매일경제', '한국경제', 
-                               '서울경제', 'IT조선', '전자신문', '디지털타임스'];
+            // 네이버 뉴스 소스로 통일
+            const sourceType = '네이버 뉴스';
 
             const demoArticles = [];
             const currentTime = new Date().getTime();
+            const uniqueTitles = new Set(); // 중복 제목 방지
             
-            // 60개의 고유한 기사 생성
-            for (let i = 0; i < 60; i++) {
+            // 30개의 고유한 기사 생성 (중복 제거)
+            for (let i = 0; i < 30; i++) {
                 const titleBase = titleVariations[i % titleVariations.length];
                 const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-                const topic = newsTopics[Math.floor(Math.random() * newsTopics.length)];
-                const sourceType = sourceTypes[i % sourceTypes.length];
                 
-                // 시간 간격을 더 다양하게 (15분~2시간 사이)
-                const timeOffset = i * (15 + Math.random() * 105) * 60 * 1000;
+                // 시간 간격을 더 다양하게 (30분~4시간 사이)
+                const timeOffset = i * (30 + Math.random() * 210) * 60 * 1000;
                 const articleTime = currentTime - timeOffset;
                 
-                // 고유한 제목 생성
-                const uniqueId = Math.random().toString(36).substr(2, 9);
-                const title = `${titleBase} - ${suffix}`;
+                // 고유한 제목 생성 (중복 방지)
+                let title = `${titleBase} - ${suffix}`;
+                let attempts = 0;
+                while (uniqueTitles.has(title) && attempts < 10) {
+                    const altSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                    title = `${titleBase} - ${altSuffix}`;
+                    attempts++;
+                }
+                uniqueTitles.add(title);
                 
-                // 다양한 설명 생성
+                // 키워드 중심의 간결한 설명 생성
                 const descriptions = [
-                    `${keyword} 분야의 ${topic}에 대한 전문가들의 심층 분석과 향후 전망을 다뤄봅니다.`,
-                    `최근 ${keyword} 관련 ${topic} 동향과 이에 따른 업계의 대응 방안을 살펴봅니다.`,
-                    `${keyword} 산업에서 주목받고 있는 ${topic} 이슈와 그 영향력을 종합 보도합니다.`,
-                    `${keyword} 분야 전문가들이 제시하는 ${topic} 전략과 실행 방안을 정리했습니다.`,
-                    `${keyword} 관련 ${topic} 변화가 시장과 소비자에게 미치는 영향을 분석합니다.`
+                    `${keyword}에 대한 최신 뉴스와 전문가 분석을 제공합니다.`,
+                    `${keyword} 관련 업계 동향과 주요 이슈를 정리했습니다.`,
+                    `${keyword}의 최근 변화와 시장에 미치는 영향을 다룹니다.`,
+                    `${keyword}에 대한 정부 정책과 업계 반응을 종합 보도합니다.`,
+                    `${keyword} 분야의 주요 소식과 향후 전망을 분석합니다.`
                 ];
                 
                 const description = descriptions[i % descriptions.length];
                 
-                // 실제 뉴스 사이트 URL 생성
-                const realNewsUrls = [
-                    `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword + ' ' + topic)}`,
-                    `https://search.daum.net/search?w=news&q=${encodeURIComponent(keyword + ' ' + topic)}`,
-                    `https://www.google.com/search?q=${encodeURIComponent(keyword + ' ' + topic)}&tbm=nws`,
-                ];
+                // 네이버 뉴스 전용 URL (정확한 키워드만 사용)
+                const url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
                 
-                const url = realNewsUrls[i % realNewsUrls.length];
+                const uniqueId = Math.random().toString(36).substr(2, 9);
                 
                 demoArticles.push({
                     id: `demo_${uniqueId}`,
                     title: title,
                     description: description,
                     url: url,
-                    source: source === 'all' ? sourceType : getSourceName(source),
+                    source: sourceType,
                     publishedAt: new Date(articleTime).toLocaleString('ko-KR'),
-                    imageUrl: `https://via.placeholder.com/300x200/2196F3/ffffff?text=${encodeURIComponent(keyword)}`,
+                    imageUrl: `https://via.placeholder.com/300x200/00C73C/ffffff?text=${encodeURIComponent(keyword)}`,
                     timestamp: articleTime
                 });
             }
             
-            // 최신순 정렬 (상단이 최신)
-            return demoArticles.sort((a, b) => b.timestamp - a.timestamp);
+            // 최신순 정렬 및 중복 제거 (제목 기준)
+            const uniqueArticles = demoArticles.filter((article, index, self) => 
+                index === self.findIndex(a => a.title === article.title)
+            );
+            
+            return uniqueArticles.sort((a, b) => b.timestamp - a.timestamp);
         }
 
-        // 소스 이름 반환
+        // 소스 이름 반환 (네이버 전용)
         function getSourceName(source) {
-            const sourceNames = {
-                'naver': '네이버 뉴스',
-                'daum': '다음 뉴스',
-                'google': '구글 뉴스'
-            };
-            return sourceNames[source] || '종합 뉴스';
+            return '네이버 뉴스';
         }
 
         // 날짜 포맷팅 함수
