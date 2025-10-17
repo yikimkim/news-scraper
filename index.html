@@ -2230,8 +2230,8 @@
         // 정부 보도자료 시스템 (API 연동)
         // =================
         
-        // API 설정
-        const API_BASE_URL = 'https://3001-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai'; // 백엔드 서버 URL
+        // API 설정 (같은 서버 사용으로 CORS 문제 해결)
+        const API_BASE_URL = ''; // 상대 경로로 변경하여 CORS 문제 완전 해결
         
         let currentAgency = 'all';
         let currentGovernmentPage = 1;

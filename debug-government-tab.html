@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정부 보도자료 탭 디버깅</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background-color: #f8d7da; }
+        .success { border-left-color: #28a745; background-color: #d4edda; }
+        .button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🔍 정부 보도자료 탭 오류 디버깅</h1>
+    
+    <div class="test-result">
+        <h3>현재 상황</h3>
+        <p>사용자 보고: 정부 보도자료 탭에서 "오류가 발생했습니다" 메시지 표시</p>
+    </div>
+
+    <button class="button" onclick="testDirectAPI()">1. 백엔드 API 직접 테스트</button>
+    <div id="api-test-result"></div>
+
+    <button class="button" onclick="testCORS()">2. CORS 문제 확인</button>
+    <div id="cors-test-result"></div>
+
+    <button class="button" onclick="testFrontendFunction()">3. 프론트엔드 함수 테스트</button>
+    <div id="frontend-test-result"></div>
+
+    <script>
+        const API_BASE_URL = 'https://3001-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai';
+
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.innerHTML = '<p>API 테스트 중...</p>';
+
+            try {
+                console.log('API 요청 시작:', `${API_BASE_URL}/api/news?agency=all&page=1&limit=5`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('응답 상태:', response.status);
+                console.log('응답 헤더:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('API 응답:', result);
+
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h4>✅ API 호출 성공</h4>
+                            <p><strong>총 보도자료:</strong> ${result.pagination.totalCount}개</p>
+                            <p><strong>현재 페이지:</strong> ${result.pagination.page}/${result.pagination.totalPages}</p>
+                            <p><strong>첫 번째 기사:</strong> ${result.data[0].title}</p>
+                            <pre>${JSON.stringify(result, null, 2).substring(0, 500)}...</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`API 오류: ${result.message || '알 수 없는 오류'}`);
+                }
+
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h4>❌ API 호출 실패</h4>
+                        <p><strong>오류:</strong> ${error.message}</p>
+                        <p><strong>API URL:</strong> ${API_BASE_URL}/api/news</p>
+                        <p><strong>네트워크 문제 가능성:</strong> CORS, 서버 다운, 잘못된 URL</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('cors-test-result');
+            resultDiv.innerHTML = '<p>CORS 테스트 중...</p>';
+
+            try {
+                // OPTIONS 요청으로 CORS preflight 확인
+                const optionsResponse = await fetch(`${API_BASE_URL}/api/news`, {
+                    method: 'OPTIONS'
+                });
+
+                console.log('OPTIONS 응답:', optionsResponse.status);
+
+                // 실제 GET 요청
+                const getResponse = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=1`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                console.log('GET 응답:', getResponse.status);
+
+                if (getResponse.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h4>✅ CORS 문제 없음</h4>
+                            <p>OPTIONS: ${optionsResponse.status}, GET: ${getResponse.status}</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`GET 요청 실패: ${getResponse.status}`);
+                }
+
+            } catch (error) {
+                console.error('CORS 테스트 오류:', error);
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h4>❌ CORS 문제 발견</h4>
+                        <p><strong>오류:</strong> ${error.message}</p>
+                        <p><strong>가능한 원인:</strong></p>
+                        <ul>
+                            <li>백엔드 서버의 CORS 설정 문제</li>
+                            <li>브라우저 보안 정책</li>
+                            <li>잘못된 API URL</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        async function testFrontendFunction() {
+            const resultDiv = document.getElementById('frontend-test-result');
+            resultDiv.innerHTML = '<p>프론트엔드 함수 시뮬레이션 중...</p>';
+
+            try {
+                // 메인 앱의 displayGovernmentNews 함수와 유사한 로직 테스트
+                console.log('정부 뉴스 표시 함수 시뮬레이션 시작');
+
+                const response = await fetch(`${API_BASE_URL}/api/news?agency=all&page=1&limit=10`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'API 응답에서 success가 false');
+                }
+
+                // HTML 생성 시뮬레이션
+                let htmlContent = '';
+                result.data.forEach((item, index) => {
+                    const isDirectUrl = item.url && (
+                        item.url.includes('view.do') || 
+                        item.url.includes('Detail.do') || 
+                        item.url.includes('/view/') || 
+                        item.url.includes('/detail/') ||
+                        item.url.includes('selectReportDetail.do') ||
+                        item.url.includes('?contentNo=') ||
+                        item.url.includes('?rptNo=')
+                    );
+
+                    htmlContent += `
+                        <div style="border: 1px solid #ddd; margin: 10px; padding: 10px; border-left: 4px solid ${isDirectUrl ? '#28a745' : '#ffc107'};">
+                            <h4>${item.title}</h4>
+                            <p><strong>기관:</strong> ${item.agency}</p>
+                            <p><strong>URL 타입:</strong> ${isDirectUrl ? '✅ 직접 링크' : '🔍 검색 링크'}</p>
+                            <a href="${item.url}" target="_blank">📖 원문 보기</a>
+                        </div>
+                    `;
+                });
+
+                resultDiv.innerHTML = `
+                    <div class="test-result success">
+                        <h4>✅ 프론트엔드 함수 시뮬레이션 성공</h4>
+                        <p><strong>처리된 기사 수:</strong> ${result.data.length}개</p>
+                        <p><strong>HTML 생성:</strong> 성공</p>
+                        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                            ${htmlContent}
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('프론트엔드 함수 테스트 오류:', error);
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h4>❌ 프론트엔드 함수 오류</h4>
+                        <p><strong>오류:</strong> ${error.message}</p>
+                        <p><strong>오류 스택:</strong></p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 자동으로 모든 테스트 실행
+        window.addEventListener('load', async () => {
+            console.log('디버깅 페이지 로드 완료, 자동 테스트 시작');
+            await testDirectAPI();
+            setTimeout(() => testCORS(), 1000);
+            setTimeout(() => testFrontendFunction(), 2000);
+        });
+    </script>
+</body>
+</html>
