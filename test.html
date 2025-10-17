@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>탭 테스트</title>
+    <style>
+        .nav-tab { margin: 10px; padding: 10px; border: 1px solid #ccc; }
+        .nav-tab.active { background: blue; color: white; }
+        .tab-content { display: none; padding: 20px; border: 1px solid #ccc; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <h1>탭 전환 테스트</h1>
+    
+    <div>
+        <button class="nav-tab active" onclick="switchTab('quick')">빠른 검색</button>
+        <button class="nav-tab" onclick="switchTab('boards')">내 게시판</button>
+        <button class="nav-tab" onclick="switchTab('government')">정부 보도자료</button>
+        <button class="nav-tab" onclick="switchTab('manage')">설정</button>
+    </div>
+    
+    <div id="quick-tab" class="tab-content active">빠른 검색 탭 내용</div>
+    <div id="boards-tab" class="tab-content">내 게시판 탭 내용</div>
+    <div id="government-tab" class="tab-content">정부 보도자료 탭 내용</div>
+    <div id="manage-tab" class="tab-content">설정 탭 내용</div>
+
+    <script>
+        function switchTab(tabName) {
+            console.log('탭 전환:', tabName);
+            
+            // 모든 탭 버튼에서 active 클래스 제거
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            // 모든 탭 컨텐츠에서 active 클래스 제거  
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 클릭된 탭 버튼 활성화
+            event.target.classList.add('active');
+            
+            // 해당 탭 컨텐츠 표시
+            const targetContent = document.getElementById(tabName + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            } else {
+                console.error(`탭 컨텐츠를 찾을 수 없습니다: ${tabName}-tab`);
+            }
+        }
+    </script>
+</body>
+</html>

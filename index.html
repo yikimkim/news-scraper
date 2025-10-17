@@ -1075,21 +1075,49 @@
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('뉴스 스크래퍼가 준비되었습니다!');
-            updateAllKeywordLists();
-            updateStatistics();
-            setupNewsSourceSelector();
-            
-            // 정부 보도자료 시스템은 탭 전환 시 초기화됨
-            
-            // 키워드 입력 필드에서 Enter 키 처리
-            document.getElementById('newKeyword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') addKeyword();
-            });
-            
-            document.getElementById('fixedKeyword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') addFixedKeyword();
-            });
+            try {
+                console.log('뉴스 스크래퍼가 준비되었습니다!');
+                console.log('DOM 초기화 시작...');
+                
+                updateAllKeywordLists();
+                updateStatistics();
+                setupNewsSourceSelector();
+                
+                // 정부 보도자료 시스템은 탭 전환 시 초기화됨
+                
+                // 키워드 입력 필드에서 Enter 키 처리
+                const newKeywordInput = document.getElementById('newKeyword');
+                if (newKeywordInput) {
+                    newKeywordInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') addKeyword();
+                    });
+                    console.log('newKeyword 이벤트 리스너 추가됨');
+                } else {
+                    console.warn('newKeyword 엘리먼트를 찾을 수 없습니다');
+                }
+                
+                const fixedKeywordInput = document.getElementById('fixedKeyword');
+                if (fixedKeywordInput) {
+                    fixedKeywordInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') addFixedKeyword();
+                    });
+                    console.log('fixedKeyword 이벤트 리스너 추가됨');
+                } else {
+                    console.warn('fixedKeyword 엘리먼트를 찾을 수 없습니다');
+                }
+                
+                console.log('DOM 초기화 완료!');
+                
+                // switchTab 함수 확인
+                if (typeof switchTab === 'function') {
+                    console.log('✅ switchTab 함수가 정상적으로 정의되었습니다');
+                } else {
+                    console.error('❌ switchTab 함수가 정의되지 않았습니다!');
+                }
+                
+            } catch (error) {
+                console.error('DOM 초기화 중 오류 발생:', error);
+            }
         });
 
         // 탭 전환

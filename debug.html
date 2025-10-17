@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>탭 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .nav-tab { 
+            margin: 5px; 
+            padding: 10px 20px; 
+            border: 2px solid #ccc; 
+            background: #f9f9f9;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .nav-tab.active { 
+            background: #007cba; 
+            color: white; 
+            border-color: #005a87;
+        }
+        .tab-content { 
+            display: none; 
+            padding: 20px; 
+            border: 2px solid #ccc; 
+            margin-top: 10px;
+            background: #f9f9f9;
+        }
+        .tab-content.active { 
+            display: block; 
+            background: white;
+        }
+        .status { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #e8f4fd; 
+            border: 1px solid #b6d7f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 탭 전환 디버그 테스트</h1>
+    
+    <div class="status" id="status">상태: 페이지 로딩 완료</div>
+    
+    <div>
+        <button class="nav-tab active" onclick="switchTab('quick')" id="tab-quick">⚡ 빠른 검색</button>
+        <button class="nav-tab" onclick="switchTab('boards')" id="tab-boards">📂 내 게시판</button>
+        <button class="nav-tab" onclick="switchTab('government')" id="tab-government">🏛️ 정부 보도자료</button>
+        <button class="nav-tab" onclick="switchTab('manage')" id="tab-manage">⚙️ 설정</button>
+    </div>
+    
+    <div id="quick-tab" class="tab-content active">
+        <h2>⚡ 빠른 검색 탭</h2>
+        <p>이곳은 빠른 검색 탭 내용입니다.</p>
+    </div>
+    <div id="boards-tab" class="tab-content">
+        <h2>📂 내 게시판 탭</h2>
+        <p>이곳은 내 게시판 탭 내용입니다.</p>
+    </div>
+    <div id="government-tab" class="tab-content">
+        <h2>🏛️ 정부 보도자료 탭</h2>
+        <p>이곳은 정부 보도자료 탭 내용입니다.</p>
+    </div>
+    <div id="manage-tab" class="tab-content">
+        <h2>⚙️ 설정 탭</h2>
+        <p>이곳은 설정 탭 내용입니다.</p>
+    </div>
+
+    <script>
+        function updateStatus(message) {
+            document.getElementById('status').textContent = '상태: ' + message;
+        }
+        
+        function switchTab(tabName) {
+            try {
+                updateStatus('탭 전환 시작: ' + tabName);
+                console.log('탭 전환:', tabName);
+                
+                // 모든 탭 버튼에서 active 클래스 제거
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                
+                // 모든 탭 컨텐츠에서 active 클래스 제거  
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 클릭된 탭 버튼 활성화
+                const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    updateStatus('탭 버튼 활성화 완료: ' + tabName);
+                } else if (event && event.target) {
+                    event.target.classList.add('active');
+                    updateStatus('이벤트 타겟으로 탭 활성화: ' + tabName);
+                }
+                
+                // 해당 탭 컨텐츠 표시
+                const targetContent = document.getElementById(tabName + '-tab');
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                    updateStatus('탭 전환 완료: ' + tabName);
+                } else {
+                    updateStatus('오류: 탭 컨텐츠를 찾을 수 없음: ' + tabName + '-tab');
+                    console.error(`탭 컨텐츠를 찾을 수 없습니다: ${tabName}-tab`);
+                }
+                
+            } catch (error) {
+                updateStatus('오류 발생: ' + error.message);
+                console.error('탭 전환 오류:', error);
+            }
+        }
+        
+        // 페이지 로딩 완료 시 상태 업데이트
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('JavaScript 로딩 완료 - 탭 테스트 준비됨');
+        });
+    </script>
+</body>
+</html>

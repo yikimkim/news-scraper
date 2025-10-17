@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>클릭 테스트</title>
+    <script>
+        function testFunction() {
+            console.log('테스트 함수가 호출되었습니다!');
+            alert('함수 호출 성공!');
+        }
+        
+        // 페이지 로드 후 자동으로 함수 테스트
+        window.onload = function() {
+            console.log('페이지 로드 완료');
+            // 3초 후 자동으로 테스트 함수 호출
+            setTimeout(function() {
+                console.log('자동 함수 호출 테스트');
+                testFunction();
+            }, 3000);
+        };
+    </script>
+</head>
+<body>
+    <h1>JavaScript 함수 호출 테스트</h1>
+    <button onclick="testFunction()">클릭하여 함수 호출 테스트</button>
+    <p>3초 후 자동으로 함수가 호출됩니다.</p>
+</body>
+</html>
