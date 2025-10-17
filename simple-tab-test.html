@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 탭 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .test-message {
+            background: #e8f5e8;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .test-message h2 {
+            color: #2E7D32;
+            margin-top: 0;
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator" id="status">테스트 준비됨</div>
+
+    <div class="container">
+        <h1>🧪 간단한 탭 전환 테스트</h1>
+        <p>이 페이지는 메인 사이트와 동일한 구조로 만들어진 간단한 탭 테스트입니다.</p>
+        <p><strong>모든 탭이 정상 작동한다면</strong> → 메인 사이트의 문제를 특정할 수 있습니다.</p>
+
+        <!-- 탭 버튼들 -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('quick')">⚡ 빠른 검색</button>
+            <button class="nav-tab" onclick="switchTab('boards')">📂 내 게시판</button>
+            <button class="nav-tab" onclick="switchTab('government')">🏛️ 정부 보도자료</button>
+            <button class="nav-tab" onclick="switchTab('manage')">⚙️ 설정</button>
+        </div>
+
+        <!-- 빠른 검색 탭 -->
+        <div id="quick-tab" class="tab-content active">
+            <div class="test-message">
+                <h2>⚡ 빠른 검색 탭</h2>
+                <p>이것은 빠른 검색 탭입니다. 기본적으로 활성화되어 있습니다.</p>
+            </div>
+            <p>여기서 키워드를 빠르게 검색할 수 있습니다.</p>
+            <p>다른 탭을 클릭해서 전환이 잘 되는지 확인해보세요.</p>
+        </div>
+
+        <!-- 게시판 탭 -->
+        <div id="boards-tab" class="tab-content">
+            <div class="test-message" style="background: #e8f5e8; border-color: #4CAF50;">
+                <h2>📂 내 게시판 탭 성공!</h2>
+                <p><strong>이 내용이 보인다면 탭 전환이 성공한 것입니다!</strong></p>
+            </div>
+            <p>여기는 저장된 키워드들의 게시판입니다.</p>
+            <p>사용자가 문제를 보고한 탭 중 하나입니다.</p>
+        </div>
+
+        <!-- 정부 보도자료 탭 -->
+        <div id="government-tab" class="tab-content">
+            <div class="test-message" style="background: #e3f2fd; border-color: #2196F3;">
+                <h2>🏛️ 정부 보도자료 탭 성공!</h2>
+                <p><strong>이 내용이 보인다면 탭 전환이 성공한 것입니다!</strong></p>
+            </div>
+            <p>여기는 정부기관 보도자료 게시판입니다.</p>
+            <p>사용자가 문제를 보고한 또 다른 탭입니다.</p>
+        </div>
+
+        <!-- 설정 탭 -->
+        <div id="manage-tab" class="tab-content">
+            <div class="test-message" style="background: #fff3e0; border-color: #FF9800;">
+                <h2>⚙️ 설정 탭</h2>
+                <p>설정 및 관리 페이지입니다.</p>
+            </div>
+            <p>키워드 관리 및 시스템 설정을 할 수 있습니다.</p>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, color = '#4CAF50') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.background = color;
+        }
+
+        function switchTab(tabName) {
+            console.log(`🔄 탭 전환: ${tabName}`);
+            updateStatus(`${tabName} 전환 중...`, '#FF9800');
+
+            try {
+                // 모든 탭 버튼 비활성화
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                // 모든 탭 콘텐츠 숨기기
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // 클릭된 탭 버튼 활성화
+                const targetButton = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+                if (targetButton) {
+                    targetButton.classList.add('active');
+                }
+
+                // 해당 탭 콘텐츠 표시
+                const targetContent = document.getElementById(`${tabName}-tab`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                    
+                    const tabNames = {
+                        'quick': '⚡ 빠른 검색',
+                        'boards': '📂 내 게시판',
+                        'government': '🏛️ 정부 보도자료',
+                        'manage': '⚙️ 설정'
+                    };
+                    
+                    setTimeout(() => {
+                        updateStatus(`${tabNames[tabName]} 활성`, '#4CAF50');
+                    }, 300);
+                    
+                    console.log(`✅ 탭 전환 완료: ${tabName}`);
+                } else {
+                    console.error(`❌ 탭 콘텐츠를 찾을 수 없음: ${tabName}-tab`);
+                    updateStatus('전환 실패', '#F44336');
+                }
+
+            } catch (error) {
+                console.error('❌ 탭 전환 오류:', error);
+                updateStatus('오류 발생', '#F44336');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 간단한 탭 테스트 페이지 준비됨');
+            updateStatus('테스트 준비됨', '#4CAF50');
+        });
+    </script>
+</body>
+</html>

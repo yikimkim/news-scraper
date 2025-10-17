@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실제 클릭 테스트</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .test-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 1rem;
+        }
+        .test-btn:hover {
+            background: #1976D2;
+        }
+        .main-frame {
+            width: 100%;
+            height: 70vh;
+            border: 3px solid #2196F3;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .log-area {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 실제 사용자 클릭 테스트</h1>
+        
+        <div class="status">
+            <h3>🎯 테스트 목적</h3>
+            <p>실제 사용자가 탭을 클릭했을 때 정확히 어떤 일이 일어나는지 확인합니다.</p>
+            <p><strong>문제:</strong> "내 게시판", "정부 보도자료" 탭이 작동하지 않는다는 사용자 보고</p>
+        </div>
+
+        <h3>📋 테스트 절차</h3>
+        <p>1. 아래 iframe에서 직접 탭들을 클릭해보세요</p>
+        <p>2. 각 탭이 정상적으로 전환되는지 확인하세요</p>
+        <p>3. 특히 "📂 내 게시판"과 "🏛️ 정부 보도자료" 탭을 중점 테스트하세요</p>
+
+        <button class="test-btn" onclick="testIframeAccess()">iframe 접근 테스트</button>
+        <button class="test-btn" onclick="forceTabSwitch('boards')">강제로 내 게시판 전환</button>
+        <button class="test-btn" onclick="forceTabSwitch('government')">강제로 정부 보도자료 전환</button>
+        <button class="test-btn" onclick="checkTabStates()">현재 탭 상태 확인</button>
+
+        <div class="log-area" id="testLog">테스트 로그가 여기에 표시됩니다...\n</div>
+
+        <h3>🌐 실제 메인 사이트 (직접 클릭 테스트)</h3>
+        <iframe class="main-frame" src="https://3000-i0i3m0ak4ew6ttwalvn3w-c81df28e.sandbox.novita.ai" id="mainSite"></iframe>
+
+        <div class="status">
+            <h3>⚠️ 테스트 시 주의사항</h3>
+            <p>• iframe 내부의 탭 버튼을 <strong>직접 마우스로 클릭</strong>해보세요</p>
+            <p>• 탭 전환 시 우상단에 알림이 나타나는지 확인하세요</p>
+            <p>• 콘텐츠가 실제로 바뀌는지 눈으로 확인하세요</p>
+            <p>• 문제가 있으면 브라우저 개발자 도구(F12) 콘솔을 확인해보세요</p>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logArea = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.textContent += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function testIframeAccess() {
+            log('🔍 iframe 접근 테스트 시작...');
+            
+            const iframe = document.getElementById('mainSite');
+            
+            try {
+                if (iframe.contentWindow) {
+                    log('✅ iframe.contentWindow 접근 성공');
+                    
+                    if (iframe.contentWindow.switchTab) {
+                        log('✅ switchTab 함수 발견됨');
+                    } else {
+                        log('❌ switchTab 함수를 찾을 수 없음');
+                    }
+                    
+                    const tabs = iframe.contentWindow.document.querySelectorAll('.nav-tab');
+                    log(`📋 탭 버튼 개수: ${tabs.length}`);
+                    
+                    const tabContents = iframe.contentWindow.document.querySelectorAll('.tab-content');
+                    log(`📄 탭 콘텐츠 개수: ${tabContents.length}`);
+                    
+                } else {
+                    log('❌ iframe 접근 실패 - CORS 제한 가능성');
+                }
+            } catch (error) {
+                log(`❌ 오류 발생: ${error.message}`);
+                log('💡 CORS 정책으로 인해 iframe 내부 접근이 제한될 수 있습니다.');
+                log('💡 직접 iframe 내부의 탭을 마우스로 클릭해서 테스트하세요.');
+            }
+        }
+
+        function forceTabSwitch(tabName) {
+            log(`🔄 강제 탭 전환 시도: ${tabName}`);
+            
+            const iframe = document.getElementById('mainSite');
+            
+            try {
+                if (iframe.contentWindow && iframe.contentWindow.switchTab) {
+                    iframe.contentWindow.switchTab(tabName);
+                    log(`✅ switchTab('${tabName}') 호출 완료`);
+                    
+                    setTimeout(() => {
+                        const activeTab = iframe.contentWindow.document.querySelector('.tab-content.active');
+                        if (activeTab && activeTab.id === `${tabName}-tab`) {
+                            log(`✅ 탭 전환 성공: ${activeTab.id} 활성화됨`);
+                        } else {
+                            log(`❌ 탭 전환 실패: ${tabName}-tab이 활성화되지 않음`);
+                            log(`   현재 활성 탭: ${activeTab ? activeTab.id : 'none'}`);
+                        }
+                    }, 500);
+                    
+                } else {
+                    log('❌ switchTab 함수에 접근할 수 없음');
+                    log('💡 iframe 내부를 직접 클릭해서 테스트해보세요');
+                }
+            } catch (error) {
+                log(`❌ 강제 전환 실패: ${error.message}`);
+            }
+        }
+
+        function checkTabStates() {
+            log('📊 현재 탭 상태 확인 중...');
+            
+            const iframe = document.getElementById('mainSite');
+            
+            try {
+                if (iframe.contentWindow && iframe.contentWindow.document) {
+                    const activeButton = iframe.contentWindow.document.querySelector('.nav-tab.active');
+                    const activeContent = iframe.contentWindow.document.querySelector('.tab-content.active');
+                    
+                    log(`🎯 활성 버튼: ${activeButton ? activeButton.textContent.trim() : 'none'}`);
+                    log(`📄 활성 콘텐츠: ${activeContent ? activeContent.id : 'none'}`);
+                    
+                    const allButtons = iframe.contentWindow.document.querySelectorAll('.nav-tab');
+                    const allContents = iframe.contentWindow.document.querySelectorAll('.tab-content');
+                    
+                    log(`📋 전체 버튼 수: ${allButtons.length}`);
+                    log(`📄 전체 콘텐츠 수: ${allContents.length}`);
+                    
+                    allContents.forEach(content => {
+                        const style = iframe.contentWindow.getComputedStyle(content);
+                        log(`   ${content.id}: display=${style.display}, visibility=${style.visibility}`);
+                    });
+                    
+                } else {
+                    log('❌ iframe 문서에 접근할 수 없음');
+                }
+            } catch (error) {
+                log(`❌ 상태 확인 실패: ${error.message}`);
+            }
+        }
+
+        // 페이지 로드 시 자동으로 접근 테스트
+        setTimeout(() => {
+            log('🚀 자동 초기화 테스트 시작');
+            testIframeAccess();
+        }, 3000);
+    </script>
+</body>
+</html>

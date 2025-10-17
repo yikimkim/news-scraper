@@ -896,10 +896,10 @@
 
         <!-- 네비게이션 탭 -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="simpleSwitchTab('quick')">⚡ 빠른 검색</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('boards')">📂 내 게시판</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('government')">🏛️ 정부 보도자료</button>
-            <button class="nav-tab" onclick="simpleSwitchTab('manage')">⚙️ 설정</button>
+            <button class="nav-tab active" onclick="switchTab('quick')">⚡ 빠른 검색</button>
+            <button class="nav-tab" onclick="switchTab('boards')">📂 내 게시판</button>
+            <button class="nav-tab" onclick="switchTab('government')">🏛️ 정부 보도자료</button>
+            <button class="nav-tab" onclick="switchTab('manage')">⚙️ 설정</button>
         </div>
 
         <!-- 빠른 검색 탭 -->
@@ -908,7 +908,7 @@
             <div class="fixed-keywords-section">
                 <div class="fixed-keywords-header">
                     <h3>🔥 자주 찾는 키워드 (빠른 접근)</h3>
-                    <button class="btn btn-secondary btn-small" onclick="simpleSwitchTab('manage')">키워드 설정</button>
+                    <button class="btn btn-secondary btn-small" onclick="switchTab('manage')">키워드 설정</button>
                 </div>
                 
                 <div class="fixed-keywords-grid" id="fixedKeywordsGrid">
@@ -1136,7 +1136,7 @@
                 
                 // 빠른 검색 탭만 명시적으로 활성화
                 const quickTab = document.getElementById('quick-tab');
-                const quickButton = document.querySelector('[onclick*="quick"]');
+                const quickButton = document.querySelector('[onclick="switchTab(\'quick\')"]');
                 
                 if (quickTab && quickButton) {
                     quickTab.classList.add('active');
@@ -1254,45 +1254,6 @@
                     setTimeout(() => feedback.remove(), 300);
                 }
             }, 3000);
-        }
-        
-        // 간단하고 확실한 탭 전환 함수
-        function simpleSwitchTab(tabName) {
-            console.log(`🚀 SIMPLE SWITCH: ${tabName}`);
-            
-            try {
-                // 시각적 피드백
-                showTabSwitchFeedback(tabName);
-                
-                // 모든 탭 비활성화
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                // 모든 컴텐츠 숨김
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                
-                // 클릭된 버튼 활성화
-                const targetButton = document.querySelector(`[onclick*="${tabName}"]`);
-                if (targetButton) {
-                    targetButton.classList.add('active');
-                }
-                
-                // 해당 컴텐츠 표시
-                const targetContent = document.getElementById(`${tabName}-tab`);
-                if (targetContent) {
-                    targetContent.classList.add('active');
-                    console.log(`✅ ${tabName} 탭 활성화 완료`);
-                } else {
-                    console.error(`❌ ${tabName}-tab 컴텐츠를 찾을 수 없음`);
-                }
-                
-            } catch (error) {
-                console.error('❌ Simple switch error:', error);
-                alert(`탭 전환 오류: ${error.message}`);
-            }
         }
         
         function switchTab(tabName) {
