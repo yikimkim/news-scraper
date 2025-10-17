@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탭 클릭 디버그</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #dee2e6; }
+        .test-button { padding: 15px 25px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .test-button:hover { background: #0056b3; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🔍 탭 클릭 문제 실시간 디버그</h1>
+    
+    <div class="debug-section">
+        <h3>1. 메인 사이트 상태 확인</h3>
+        <button class="test-button" onclick="checkMainSite()">메인 사이트 상태 점검</button>
+        <div class="result info" id="main-status">클릭하여 확인...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>2. JavaScript 함수 존재 여부 확인</h3>
+        <button class="test-button" onclick="checkJSFunctions()">함수 정의 상태 확인</button>
+        <div class="result info" id="js-status">클릭하여 확인...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>3. 실제 탭 클릭 시뮬레이션</h3>
+        <button class="test-button" onclick="simulateTabClicks()">탭 클릭 시뮬레이션 실행</button>
+        <div class="result info" id="click-status">클릭하여 확인...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>4. DOM 요소 확인</h3>
+        <button class="test-button" onclick="checkDOMElements()">DOM 구조 확인</button>
+        <div class="result info" id="dom-status">클릭하여 확인...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>5. 실시간 브라우저 테스트</h3>
+        <button class="test-button" onclick="openTestBrowser()">새 창에서 직접 테스트</button>
+        <div class="result warning" id="browser-test">
+            새 창이 열리면 다음을 시도하세요:
+            1. F12를 눌러 개발자 도구 열기
+            2. Console에서 다음 명령어 실행:
+               switchTab('boards')
+               switchTab('government')
+        </div>
+    </div>
+
+    <script>
+        const mainUrl = window.location.origin + '/';
+
+        async function checkMainSite() {
+            const result = document.getElementById('main-status');
+            result.textContent = '메인 사이트 확인 중...';
+            
+            try {
+                // 메인 사이트 HTML 가져오기
+                const response = await fetch(mainUrl);
+                const html = await response.text();
+                
+                // 주요 요소들 확인
+                const hasNavTabs = html.includes('class="nav-tabs"');
+                const hasBoardsButton = html.includes('onclick="switchTab(\'boards\')"');
+                const hasGovernmentButton = html.includes('onclick="switchTab(\'government\')"');
+                const hasBoardsContent = html.includes('id="boards-tab"');
+                const hasGovernmentContent = html.includes('id="government-tab"');
+                const hasSwitchTabFunction = html.includes('async function switchTab(');
+                
+                result.className = 'result ' + (hasNavTabs && hasBoardsButton && hasGovernmentButton ? 'success' : 'error');
+                result.textContent = `메인 사이트 상태 (${response.status}):
+✅ 응답 상태: ${response.status} OK
+${hasNavTabs ? '✅' : '❌'} nav-tabs 클래스 존재
+${hasBoardsButton ? '✅' : '❌'} 내 게시판 버튼 onclick 속성
+${hasGovernmentButton ? '✅' : '❌'} 정부 보도자료 버튼 onclick 속성
+${hasBoardsContent ? '✅' : '❌'} boards-tab 컨텐츠 영역
+${hasGovernmentContent ? '✅' : '❌'} government-tab 컨텐츠 영역
+${hasSwitchTabFunction ? '✅' : '❌'} switchTab 함수 정의
+
+HTML 크기: ${(html.length / 1024).toFixed(1)}KB`;
+
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 메인 사이트 확인 실패: ${error.message}`;
+            }
+        }
+
+        async function checkJSFunctions() {
+            const result = document.getElementById('js-status');
+            result.textContent = 'JavaScript 함수 확인 중...';
+            
+            try {
+                const response = await fetch(mainUrl);
+                const html = await response.text();
+                
+                // switchTab 함수 위치 확인
+                const switchTabMatch = html.match(/async function switchTab\([\s\S]*?(?=\n\s*(?:function|async function|const|let|var|\/\/|$))/);
+                const isInGlobalScope = switchTabMatch && !html.substring(0, html.indexOf(switchTabMatch[0])).includes('addEventListener');
+                
+                // 다른 주요 함수들 확인
+                const hasUpdateKeywordLists = html.includes('function updateAllKeywordLists');
+                const hasInitGovernmentTab = html.includes('function initGovernmentTab');
+                const hasDisplayGovernmentNews = html.includes('function displayGovernmentNews');
+                
+                result.className = 'result ' + (isInGlobalScope ? 'success' : 'error');
+                result.textContent = `JavaScript 함수 상태:
+${switchTabMatch ? '✅' : '❌'} switchTab 함수 존재
+${isInGlobalScope ? '✅' : '❌'} switchTab 함수가 전역 스코프에 정의
+${hasUpdateKeywordLists ? '✅' : '❌'} updateAllKeywordLists 함수 존재
+${hasInitGovernmentTab ? '✅' : '❌'} initGovernmentTab 함수 존재
+${hasDisplayGovernmentNews ? '✅' : '❌'} displayGovernmentNews 함수 존재
+
+switchTab 함수 길이: ${switchTabMatch ? switchTabMatch[0].length : 0}자`;
+
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 함수 확인 실패: ${error.message}`;
+            }
+        }
+
+        async function simulateTabClicks() {
+            const result = document.getElementById('click-status');
+            result.textContent = '탭 클릭 시뮬레이션 중...';
+            
+            try {
+                // iframe을 사용해서 실제 탭 클릭 테스트
+                const iframe = document.createElement('iframe');
+                iframe.src = mainUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '400px';
+                iframe.style.border = '1px solid #ccc';
+                
+                result.parentNode.appendChild(iframe);
+                
+                iframe.onload = () => {
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const iframeWindow = iframe.contentWindow;
+                        
+                        // switchTab 함수 존재 확인
+                        const switchTabExists = typeof iframeWindow.switchTab === 'function';
+                        
+                        result.className = 'result ' + (switchTabExists ? 'success' : 'error');
+                        result.textContent = `iframe 테스트 결과:
+${switchTabExists ? '✅' : '❌'} switchTab 함수 접근 가능
+                        
+iframe 로드 완료. 아래 iframe에서 직접 탭을 클릭해보세요!`;
+
+                        if (switchTabExists) {
+                            // 자동으로 탭 클릭 테스트
+                            setTimeout(() => {
+                                try {
+                                    console.log('iframe에서 boards 탭 클릭 테스트');
+                                    iframeWindow.switchTab('boards');
+                                    
+                                    setTimeout(() => {
+                                        console.log('iframe에서 government 탭 클릭 테스트');
+                                        iframeWindow.switchTab('government');
+                                        
+                                        result.textContent += '\n\n✅ 자동 탭 클릭 테스트 완료!';
+                                    }, 2000);
+                                } catch (e) {
+                                    result.textContent += `\n❌ 자동 클릭 오류: ${e.message}`;
+                                }
+                            }, 3000);
+                        }
+                        
+                    } catch (error) {
+                        result.className = 'result error';
+                        result.textContent = `❌ iframe 접근 오류: ${error.message}`;
+                    }
+                };
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 시뮬레이션 실패: ${error.message}`;
+            }
+        }
+
+        async function checkDOMElements() {
+            const result = document.getElementById('dom-status');
+            result.textContent = 'DOM 요소 확인 중...';
+            
+            try {
+                const response = await fetch(mainUrl);
+                const html = await response.text();
+                
+                // 탭 버튼들의 onclick 속성 정확한 내용 확인
+                const boardsButtonMatch = html.match(/onclick="switchTab\('boards'\)"[^>]*>([^<]*)</);
+                const govButtonMatch = html.match(/onclick="switchTab\('government'\)"[^>]*>([^<]*)</);
+                
+                // 탭 컨텐츠들의 ID 확인
+                const boardsContentMatch = html.match(/id="boards-tab"[^>]*class="[^"]*tab-content[^"]*"/);
+                const govContentMatch = html.match(/id="government-tab"[^>]*class="[^"]*tab-content[^"]*"/);
+                
+                result.className = 'result success';
+                result.textContent = `DOM 구조 분석:
+
+탭 버튼들:
+${boardsButtonMatch ? '✅' : '❌'} 내 게시판 버튼: ${boardsButtonMatch ? boardsButtonMatch[1] : '없음'}
+${govButtonMatch ? '✅' : '❌'} 정부 보도자료 버튼: ${govButtonMatch ? govButtonMatch[1] : '없음'}
+
+탭 컨텐츠들:
+${boardsContentMatch ? '✅' : '❌'} boards-tab 컨텐츠 영역
+${govContentMatch ? '✅' : '❌'} government-tab 컨텐츠 영역
+
+CSS 클래스:
+- tab-content 기본 스타일: display: none !important
+- tab-content.active 활성 스타일: display: block !important`;
+
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ DOM 확인 실패: ${error.message}`;
+            }
+        }
+
+        function openTestBrowser() {
+            const result = document.getElementById('browser-test');
+            
+            const testWindow = window.open(mainUrl, '_blank', 'width=1200,height=800');
+            
+            if (testWindow) {
+                result.className = 'result success';
+                result.textContent = `✅ 새 창이 열렸습니다!
+
+실제 테스트 방법:
+1. 새 창에서 F12를 눌러 개발자 도구를 엽니다
+2. Console 탭으로 이동합니다
+3. 다음 명령어들을 하나씩 입력해보세요:
+
+   switchTab('boards')
+   → 내 게시판으로 전환되어야 함
+
+   switchTab('government')  
+   → 정부 보도자료로 전환되어야 함
+
+4. 실제 탭 버튼도 클릭해보세요:
+   - 📂 내 게시판
+   - 🏛️ 정부 보도자료
+
+만약 오류가 발생한다면:
+- "switchTab is not defined" → 함수가 전역 스코프에 없음
+- "Cannot read properties" → DOM 요소가 없음
+- 아무 반응 없음 → CSS 문제 또는 이벤트 문제`;
+            } else {
+                result.className = 'result error';
+                result.textContent = '❌ 팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용하거나 직접 메인 사이트로 이동하세요.';
+            }
+        }
+
+        // 페이지 로드 시 자동 체크
+        window.addEventListener('load', () => {
+            setTimeout(checkMainSite, 1000);
+        });
+    </script>
+</body>
+</html>

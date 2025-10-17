@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메인 앱 기관 필터 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ 메인 앱 기관 필터 테스트</h1>
+        
+        <div class="instructions">
+            <h3>📋 테스트 지침</h3>
+            <ol>
+                <li><strong>아래 프레임에서 메인 애플리케이션이 로드됩니다</strong></li>
+                <li><strong>"🏛️ 정부 보도자료" 탭을 클릭하세요</strong></li>
+                <li><strong>정부 보도자료 섹션에서 기관 필터 버튼들을 테스트하세요:</strong>
+                    <ul>
+                        <li>📊 전체</li>
+                        <li>💰 금융위원회</li>
+                        <li>🏦 금융감독원</li>
+                        <li>⚖️ 공정거래위원회</li>
+                    </ul>
+                </li>
+                <li><strong>각 버튼이 클릭되고 활성화 상태가 변경되는지 확인하세요</strong></li>
+            </ol>
+        </div>
+        
+        <div class="test-actions">
+            <button class="test-button" onclick="openGovernmentTab()">🎯 정부 보도자료 탭으로 바로 이동</button>
+            <button class="test-button" onclick="reloadFrame()">🔄 프레임 새로고침</button>
+        </div>
+        
+        <iframe id="mainApp" class="test-frame" src="https://3000-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai"></iframe>
+    </div>
+
+    <script>
+        function reloadFrame() {
+            document.getElementById('mainApp').src = document.getElementById('mainApp').src;
+        }
+        
+        function openGovernmentTab() {
+            try {
+                const iframe = document.getElementById('mainApp');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // 정부 보도자료 탭 버튼 찾기
+                const govButton = iframeDoc.querySelector('[data-tab="government"]');
+                if (govButton) {
+                    govButton.click();
+                    console.log('✅ 정부 보도자료 탭 클릭됨');
+                } else {
+                    console.error('❌ 정부 보도자료 탭 버튼을 찾을 수 없습니다');
+                }
+            } catch (error) {
+                console.error('❌ 크로스 오리진 제약으로 인해 자동 클릭이 불가능합니다:', error.message);
+                alert('정부 보도자료 탭을 수동으로 클릭해주세요.');
+            }
+        }
+        
+        // 프레임 로드 완료 시 알림
+        document.getElementById('mainApp').addEventListener('load', function() {
+            console.log('✅ 메인 애플리케이션이 로드되었습니다');
+        });
+    </script>
+</body>
+</html>

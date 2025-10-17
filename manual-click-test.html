@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수동 탭 클릭 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-controls { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-button { 
+            padding: 15px 25px; 
+            margin: 10px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; font-family: monospace; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 수동 탭 클릭 시뮬레이션 테스트</h1>
+    
+    <div class="test-controls">
+        <h3>1. 정부 보도자료 탭 클릭 테스트</h3>
+        <button class="test-button" onclick="testGovernmentTab()">
+            🏛️ 정부 보도자료 탭 클릭 (5초간 유지)
+        </button>
+        <div class="result" id="gov-result">테스트 전 상태</div>
+    </div>
+
+    <div class="test-controls">
+        <h3>2. 내 게시판 탭 클릭 테스트</h3>
+        <button class="test-button" onclick="testBoardsTab()">
+            📂 내 게시판 탭 클릭 (5초간 유지)
+        </button>
+        <div class="result" id="boards-result">테스트 전 상태</div>
+    </div>
+
+    <div class="test-controls">
+        <h3>3. 연속 탭 전환 테스트</h3>
+        <button class="test-button" onclick="testMultipleTabs()">
+            🔄 여러 탭 순차 클릭 테스트
+        </button>
+        <div class="result" id="multiple-result">테스트 전 상태</div>
+    </div>
+
+    <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">
+        <h3>🎯 예상 결과</h3>
+        <p><strong>수정 전:</strong> 탭을 클릭해도 10초 후 자동으로 빠른 검색 탭으로 돌아감</p>
+        <p><strong>수정 후:</strong> 탭을 클릭하면 그 탭에 계속 머물러 있음</p>
+        
+        <div style="margin-top: 15px;">
+            <a href="/" target="_blank" style="display: inline-block; padding: 15px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;">
+                🌐 실제 메인 사이트에서 직접 테스트
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function testGovernmentTab() {
+            const result = document.getElementById('gov-result');
+            result.className = 'result info';
+            result.innerHTML = '🔄 정부 보도자료 탭 테스트 시작...';
+
+            // 새 창에서 메인 사이트를 열고 정부 탭으로 이동
+            const testWindow = window.open('/', '_blank');
+            
+            setTimeout(() => {
+                try {
+                    // 정부 보도자료 탭 클릭 시뮬레이션
+                    if (testWindow && !testWindow.closed) {
+                        testWindow.eval(`
+                            console.log('🧪 정부 보도자료 탭 클릭 테스트');
+                            switchTab('government');
+                        `);
+                        
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            ✅ 정부 보도자료 탭 클릭 완료<br>
+                            • 새 창에서 정부 보도자료 탭으로 전환됨<br>
+                            • 5초 후 자동 복귀하는지 확인하세요<br>
+                            • 예상: 탭이 유지되어야 함 (자동 복귀 없음)
+                        `;
+
+                        // 5초 후 상태 확인
+                        setTimeout(() => {
+                            result.innerHTML += '<br>⏰ 5초 경과 - 아직 정부 보도자료 탭에 있다면 성공!';
+                        }, 5000);
+                        
+                    } else {
+                        result.className = 'result info';
+                        result.innerHTML = '❌ 새 창이 차단되었거나 닫혔습니다. 수동으로 메인 사이트에서 테스트하세요.';
+                    }
+                } catch (error) {
+                    result.className = 'result info';
+                    result.innerHTML = `❌ 스크립트 실행 오류: ${error.message}<br>수동으로 메인 사이트에서 테스트하세요.`;
+                }
+            }, 2000);
+        }
+
+        function testBoardsTab() {
+            const result = document.getElementById('boards-result');
+            result.className = 'result info';
+            result.innerHTML = '🔄 내 게시판 탭 테스트 시작...';
+
+            // 새 창에서 메인 사이트를 열고 내 게시판 탭으로 이동
+            const testWindow = window.open('/', '_blank');
+            
+            setTimeout(() => {
+                try {
+                    if (testWindow && !testWindow.closed) {
+                        testWindow.eval(`
+                            console.log('🧪 내 게시판 탭 클릭 테스트');
+                            switchTab('boards');
+                        `);
+                        
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            ✅ 내 게시판 탭 클릭 완료<br>
+                            • 새 창에서 내 게시판 탭으로 전환됨<br>
+                            • 키워드 목록이 표시되어야 함<br>
+                            • 5초 후에도 내 게시판에 머물러 있어야 함
+                        `;
+
+                        setTimeout(() => {
+                            result.innerHTML += '<br>⏰ 5초 경과 - 아직 내 게시판에 있다면 성공!';
+                        }, 5000);
+                        
+                    } else {
+                        result.className = 'result info';
+                        result.innerHTML = '❌ 새 창이 차단되었거나 닫혔습니다. 수동으로 메인 사이트에서 테스트하세요.';
+                    }
+                } catch (error) {
+                    result.className = 'result info';
+                    result.innerHTML = `❌ 스크립트 실행 오류: ${error.message}<br>수동으로 메인 사이트에서 테스트하세요.`;
+                }
+            }, 2000);
+        }
+
+        function testMultipleTabs() {
+            const result = document.getElementById('multiple-result');
+            result.className = 'result info';
+            result.innerHTML = '🔄 연속 탭 전환 테스트 시작...';
+
+            const testWindow = window.open('/', '_blank');
+            
+            setTimeout(() => {
+                try {
+                    if (testWindow && !testWindow.closed) {
+                        let step = 1;
+                        result.innerHTML = '1단계: 내 게시판으로 전환 중...';
+                        
+                        // 1단계: 내 게시판
+                        testWindow.eval(`switchTab('boards')`);
+                        
+                        setTimeout(() => {
+                            result.innerHTML += '<br>2단계: 정부 보도자료로 전환 중...';
+                            testWindow.eval(`switchTab('government')`);
+                            
+                            setTimeout(() => {
+                                result.innerHTML += '<br>3단계: 설정으로 전환 중...';
+                                testWindow.eval(`switchTab('manage')`);
+                                
+                                setTimeout(() => {
+                                    result.className = 'result success';
+                                    result.innerHTML += '<br>✅ 연속 탭 전환 완료!<br>• 최종적으로 설정 탭에 머물러 있어야 함<br>• 자동으로 다른 탭으로 변경되지 않아야 함';
+                                }, 1500);
+                                
+                            }, 1500);
+                            
+                        }, 1500);
+                        
+                    } else {
+                        result.className = 'result info';
+                        result.innerHTML = '❌ 새 창이 차단되었거나 닫혔습니다. 수동으로 메인 사이트에서 테스트하세요.';
+                    }
+                } catch (error) {
+                    result.className = 'result info';
+                    result.innerHTML = `❌ 스크립트 실행 오류: ${error.message}<br>수동으로 메인 사이트에서 테스트하세요.`;
+                }
+            }, 2000);
+        }
+
+        // 페이지 로드 시 안내
+        window.addEventListener('load', () => {
+            console.log('🧪 수동 탭 클릭 테스트 페이지 준비됨');
+            console.log('💡 자동 탭 전환이 제거되었으므로 수동 클릭한 탭에 머물러야 합니다');
+        });
+    </script>
+</body>
+</html>

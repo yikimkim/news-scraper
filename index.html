@@ -857,6 +857,30 @@
             color: white;
         }
 
+        /* 정부기관 직접 링크 스타일 */
+        .agency-link {
+            display: inline-block;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white !important;
+            text-decoration: none !important;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+        
+        .agency-link:hover {
+            background: linear-gradient(45deg, #1976D2, #1BA6D2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        
+        .agency-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
         /* 반응형 디자인 - 모바일에서는 세로형으로 변경 */
         @media (max-width: 768px) {
             .government-news-card {
@@ -2047,8 +2071,10 @@
                 
                 const description = descriptions[i % descriptions.length];
                 
-                // 네이버 뉴스 전용 URL (정확한 키워드만 사용)
-                const url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(keyword)}`;
+                // 해당 기사 제목으로 네이버 뉴스 검색하여 가장 관련 있는 기사로 연결
+                const articleTitle = title.replace(/ - .*$/, ''); // 부제목 제거
+                const searchQuery = `${keyword} ${articleTitle.split(' ').slice(1, 3).join(' ')}`.trim();
+                const url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(searchQuery)}&sort=1`;
                 
                 const uniqueId = Math.random().toString(36).substr(2, 9);
                 
@@ -2219,10 +2245,35 @@
                 await updateGovernmentStats();
                 
                 if (newsData.length === 0) {
+                    // 기관별 실제 보도자료 사이트 링크 제공
+                    const agencyLinks = {
+                        'all': `
+                            <div class="agency-links">
+                                <h4>📋 실제 정부기관 보도자료 바로가기</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                                    <a href="https://www.fsc.go.kr/no010101" target="_blank" class="agency-link">
+                                        💰 금융위원회 보도자료
+                                    </a>
+                                    <a href="https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218" target="_blank" class="agency-link">
+                                        🏦 금융감독원 보도자료
+                                    </a>
+                                    <a href="https://www.ftc.go.kr/www/selectReportList.do?key=10&pageUnit=10&searchCnd=&searchKrwd=" target="_blank" class="agency-link">
+                                        ⚖️ 공정거래위원회 보도자료
+                                    </a>
+                                </div>
+                            </div>
+                        `,
+                        'fsc': '<a href="https://www.fsc.go.kr/no010101" target="_blank" class="agency-link">💰 금융위원회 보도자료 바로가기</a>',
+                        'fss': '<a href="https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218" target="_blank" class="agency-link">🏦 금융감독원 보도자료 바로가기</a>',
+                        'ftc': '<a href="https://www.ftc.go.kr/www/selectReportList.do?key=10&pageUnit=10&searchCnd=&searchKrwd=" target="_blank" class="agency-link">⚖️ 공정거래위원회 보도자료 바로가기</a>'
+                    };
+                    
                     newsList.innerHTML = `
                         <div class="welcome-message">
-                            <h3>📋 보도자료 없음</h3>
-                            <p>선택한 기관의 보도자료가 없습니다. 새로고침을 시도해주세요.</p>
+                            <h3>📋 저장된 보도자료 없음</h3>
+                            <p>선택한 기관의 저장된 보도자료가 없습니다.</p>
+                            <p>아래 링크를 통해 실제 정부기관 보도자료를 확인하세요.</p>
+                            ${agencyLinks[currentAgency] || agencyLinks['all']}
                         </div>
                     `;
                     document.getElementById('government-pagination').style.display = 'none';

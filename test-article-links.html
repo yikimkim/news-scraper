@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기사 링크 개선 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        .instructions {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .feature-box {
+            background: #f0f8ff;
+            border: 1px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .feature-title {
+            color: #1976D2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .improvement-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 기사 직접 연결 개선 완료!</h1>
+        
+        <div class="instructions">
+            <h3>✅ 구현 완료된 기사 링크 개선사항</h3>
+            
+            <div class="feature-box">
+                <div class="feature-title">1. 📰 빠른 검색 기사 링크 개선</div>
+                <div class="improvement-box">
+                    <strong>이전:</strong> 네이버 검색 결과 페이지로만 연결<br>
+                    <strong>개선:</strong> 키워드 + 기사 제목으로 더 정확한 네이버 뉴스 검색 결과로 연결
+                </div>
+                <p>• 기사 제목의 핵심 키워드를 추출하여 검색 정확도 향상</p>
+                <p>• 사용자가 찾고자 하는 기사와 더 유사한 결과 제공</p>
+                <p>• URL 형식: <code>https://search.naver.com/search.naver?where=news&query=키워드+제목&sort=1</code></p>
+            </div>
+            
+            <div class="feature-box">
+                <div class="feature-title">2. 🏛️ 정부 보도자료 링크 개선</div>
+                <div class="improvement-box">
+                    <strong>이전:</strong> 데이터 없을 시 간단한 안내 메시지만<br>
+                    <strong>개선:</strong> 실제 정부기관 보도자료 사이트로 직접 연결
+                </div>
+                <p>• <strong>금융위원회:</strong> https://www.fsc.go.kr/no010101</p>
+                <p>• <strong>금융감독원:</strong> https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218</p>
+                <p>• <strong>공정거래위원회:</strong> https://www.ftc.go.kr/www/selectReportList.do?key=10</p>
+                <p>• 데이터 있을 시: 개별 보도자료 페이지로 직접 연결</p>
+            </div>
+            
+            <div class="feature-box">
+                <div class="feature-title">3. 🎨 사용자 경험 개선</div>
+                <p>• 예쁜 버튼 스타일로 정부기관 링크 디자인</p>
+                <p>• 호버 효과와 그라데이션으로 클릭 유도</p>
+                <p>• 새 창에서 열리도록 target="_blank" 적용</p>
+                <p>• 기관별 아이콘(💰🏦⚖️)으로 시각적 구분</p>
+            </div>
+        </div>
+        
+        <div class="test-actions">
+            <h3>🧪 테스트 방법</h3>
+            <ol>
+                <li><strong>빠른 검색 테스트:</strong>
+                    <ul>
+                        <li>"저축은행" 키워드로 검색</li>
+                        <li>검색 결과 기사들의 "자세히 읽기 →" 링크 클릭</li>
+                        <li>네이버 뉴스에서 관련 기사들이 정확히 표시되는지 확인</li>
+                    </ul>
+                </li>
+                <li><strong>정부 보도자료 테스트:</strong>
+                    <ul>
+                        <li>"🏛️ 정부 보도자료" 탭으로 이동</li>
+                        <li>기관 필터 버튼들(금융위원회, 금융감독원, 공정거래위원회) 클릭</li>
+                        <li>데이터 없을 시 표시되는 실제 정부기관 링크들 클릭</li>
+                        <li>실제 정부기관 보도자료 페이지로 이동하는지 확인</li>
+                    </ul>
+                </li>
+                <li><strong>전체 기능 테스트:</strong>
+                    <ul>
+                        <li>고정 키워드 추가 후 클릭 테스트</li>
+                        <li>기사 저장 기능 테스트</li>
+                        <li>모든 링크가 새 창에서 열리는지 확인</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <button class="test-button" onclick="reloadFrame()">🔄 프레임 새로고침</button>
+        </div>
+        
+        <iframe id="mainApp" class="test-frame" src="https://3000-imyjsakhqpzwgwbkwlqpw-5c13a017.sandbox.novita.ai"></iframe>
+    </div>
+
+    <script>
+        function reloadFrame() {
+            document.getElementById('mainApp').src = document.getElementById('mainApp').src;
+        }
+        
+        // 프레임 로드 완료 시 알림
+        document.getElementById('mainApp').addEventListener('load', function() {
+            console.log('✅ 기사 링크가 개선된 뉴스 스크래퍼가 로드되었습니다');
+        });
+    </script>
+</body>
+</html>

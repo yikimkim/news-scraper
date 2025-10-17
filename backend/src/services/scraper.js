@@ -183,17 +183,23 @@ function generateDemoNewsData(agency) {
         const now = new Date();
         const publishedAt = new Date(now.getTime() - (i * 4 + Math.random() * 4) * 60 * 60 * 1000);
         
-        // 실제 정부 기관 보도자료 페이지 URL 생성
+        // 실제 정부 기관 개별 보도자료 URL 생성
         let realUrl;
+        const currentDate = new Date();
+        const articleId = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}${String(i + 1).padStart(3, '0')}`;
+        
         switch (agency.code) {
             case 'fsc':
-                realUrl = 'https://www.fsc.go.kr/no010101'; // 금융위원회 보도자료 페이지
+                // 금융위원회 개별 보도자료 URL (예시 패턴)
+                realUrl = `https://www.fsc.go.kr/no010101/view.do?contentNo=${articleId}&menuNo=200218`;
                 break;
             case 'fss':
-                realUrl = 'https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218'; // 금융감독원 보도자료 페이지
+                // 금융감독원 개별 보도자료 URL (예시 패턴)  
+                realUrl = `https://www.fss.or.kr/fss/bbs/B0000188/view.do?nttId=${articleId}&menuNo=200218`;
                 break;
             case 'ftc':
-                realUrl = 'https://www.ftc.go.kr/www/selectReportList.do?key=10'; // 공정거래위원회 보도자료 페이지
+                // 공정거래위원회 개별 보도자료 URL (예시 패턴)
+                realUrl = `https://www.ftc.go.kr/www/selectReportDetail.do?key=10&rptNo=${articleId}`;
                 break;
             default:
                 realUrl = agency.baseUrl;

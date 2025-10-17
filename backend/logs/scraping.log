@@ -183,3 +183,6 @@
 {"level":"info","message":"✅ 스크래핑 완료 (6초 소요)","timestamp":"2025-10-17 00:13:16"}
 {"level":"info","message":"📊 결과: 신규 0개, 총 처리 13개","timestamp":"2025-10-17 00:13:16"}
 {"level":"info","message":"📈 현재 DB 상태: 총 34개 보도자료 저장됨","timestamp":"2025-10-17 00:13:16"}
+{"level":"info","message":"데이터베이스 연결됨: /home/user/webapp/backend/data/government_news.db","timestamp":"2025-10-17 04:23:35"}
+{"level":"info","message":"뉴스 테이블 생성/확인 완료","timestamp":"2025-10-17 04:23:35"}
+{"level":"info","message":"통계 테이블 생성/확인 완료","timestamp":"2025-10-17 04:23:35"}

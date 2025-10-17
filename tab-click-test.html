@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실제 탭 클릭 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-frame { border: 2px solid #ccc; margin: 20px 0; }
+        .controls { margin: 10px 0; }
+        button { margin: 5px; padding: 10px; }
+        .result { padding: 10px; background: #f5f5f5; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>실제 탭 클릭 동작 테스트</h1>
+    
+    <div class="controls">
+        <button onclick="loadMainSite()">메인 사이트 로드</button>
+        <button onclick="clickBoardsTab()">내 게시판 탭 클릭</button>
+        <button onclick="clickGovernmentTab()">정부 보도자료 탭 클릭</button>
+        <button onclick="checkCurrentTab()">현재 활성 탭 확인</button>
+    </div>
+    
+    <div class="result" id="test-result"></div>
+    
+    <div class="test-frame">
+        <iframe id="main-frame" width="100%" height="600px" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        const mainUrl = window.location.origin + '/';
+        let frame = null;
+
+        function loadMainSite() {
+            frame = document.getElementById('main-frame');
+            frame.src = mainUrl;
+            
+            frame.onload = () => {
+                updateResult('✅ 메인 사이트 로드 완료');
+                
+                // 3초 후 자동으로 DOM 로딩 완료 대기
+                setTimeout(() => {
+                    checkFrameReady();
+                }, 3000);
+            };
+        }
+
+        function checkFrameReady() {
+            try {
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                const navTabs = frameDoc.querySelector('.nav-tabs');
+                const boardsTab = frameDoc.querySelector('[onclick*="boards"]');
+                const governmentTab = frameDoc.querySelector('[onclick*="government"]');
+                
+                updateResult(`
+                    DOM 확인:<br>
+                    • nav-tabs: ${navTabs ? '✅ 존재' : '❌ 없음'}<br>
+                    • 내 게시판 탭: ${boardsTab ? '✅ 존재' : '❌ 없음'}<br>
+                    • 정부 보도자료 탭: ${governmentTab ? '✅ 존재' : '❌ 없음'}<br>
+                    ${boardsTab ? `• 내 게시판 탭 텍스트: "${boardsTab.textContent.trim()}"` : ''}<br>
+                    ${governmentTab ? `• 정부 탭 텍스트: "${governmentTab.textContent.trim()}"` : ''}
+                `);
+            } catch (error) {
+                updateResult(`❌ 프레임 접근 오류: ${error.message}`);
+            }
+        }
+
+        function clickBoardsTab() {
+            try {
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                const frameWindow = frame.contentWindow;
+                
+                // 내 게시판 탭 찾기
+                const boardsTab = frameDoc.querySelector('[onclick*="boards"]');
+                
+                if (!boardsTab) {
+                    updateResult('❌ 내 게시판 탭을 찾을 수 없습니다');
+                    return;
+                }
+                
+                updateResult('🔄 내 게시판 탭 클릭 시뮬레이션 중...');
+                
+                // 클릭 이벤트 시뮬레이션
+                boardsTab.click();
+                
+                // 1초 후 결과 확인
+                setTimeout(() => {
+                    checkTabState(frameDoc, 'boards-tab', '내 게시판');
+                }, 1000);
+                
+            } catch (error) {
+                updateResult(`❌ 내 게시판 탭 클릭 오류: ${error.message}`);
+            }
+        }
+
+        function clickGovernmentTab() {
+            try {
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                const frameWindow = frame.contentWindow;
+                
+                // 정부 보도자료 탭 찾기
+                const governmentTab = frameDoc.querySelector('[onclick*="government"]');
+                
+                if (!governmentTab) {
+                    updateResult('❌ 정부 보도자료 탭을 찾을 수 없습니다');
+                    return;
+                }
+                
+                updateResult('🔄 정부 보도자료 탭 클릭 시뮬레이션 중...');
+                
+                // 클릭 이벤트 시뮬레이션
+                governmentTab.click();
+                
+                // 3초 후 결과 확인 (API 호출 시간 고려)
+                setTimeout(() => {
+                    checkTabState(frameDoc, 'government-tab', '정부 보도자료');
+                }, 3000);
+                
+            } catch (error) {
+                updateResult(`❌ 정부 보도자료 탭 클릭 오류: ${error.message}`);
+            }
+        }
+
+        function checkTabState(frameDoc, tabId, tabName) {
+            try {
+                const targetTab = frameDoc.getElementById(tabId);
+                const activeTab = frameDoc.querySelector('.nav-tab.active');
+                const activeContent = frameDoc.querySelector('.tab-content.active');
+                
+                if (!targetTab) {
+                    updateResult(`❌ ${tabName} 컨텐츠 요소(${tabId})를 찾을 수 없습니다`);
+                    return;
+                }
+                
+                const computedStyle = frameDoc.defaultView.getComputedStyle(targetTab);
+                const isVisible = computedStyle.display !== 'none' && targetTab.classList.contains('active');
+                
+                updateResult(`
+                    ${tabName} 탭 상태 확인:<br>
+                    • 탭 컨텐츠 존재: ${targetTab ? '✅' : '❌'}<br>
+                    • active 클래스: ${targetTab.classList.contains('active') ? '✅' : '❌'}<br>
+                    • display 속성: ${computedStyle.display}<br>
+                    • visibility 속성: ${computedStyle.visibility}<br>
+                    • opacity 속성: ${computedStyle.opacity}<br>
+                    • 실제 표시 여부: ${isVisible ? '✅ 표시됨' : '❌ 숨겨짐'}<br>
+                    • 활성 탭 버튼: ${activeTab ? activeTab.textContent.trim() : '없음'}<br>
+                    • 활성 컨텐츠: ${activeContent ? activeContent.id : '없음'}
+                `);
+                
+                // 컨텐츠 내용도 확인
+                if (isVisible) {
+                    const contentText = targetTab.textContent.substring(0, 200);
+                    updateResult(`📄 컨텐츠 내용 (처음 200자):<br>${contentText}...`);
+                }
+                
+            } catch (error) {
+                updateResult(`❌ 탭 상태 확인 오류: ${error.message}`);
+            }
+        }
+
+        function checkCurrentTab() {
+            try {
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                const activeTab = frameDoc.querySelector('.nav-tab.active');
+                const activeContent = frameDoc.querySelector('.tab-content.active');
+                const allTabs = frameDoc.querySelectorAll('.nav-tab');
+                const allContents = frameDoc.querySelectorAll('.tab-content');
+                
+                let tabStatus = '';
+                allTabs.forEach((tab, index) => {
+                    tabStatus += `${index + 1}. ${tab.textContent.trim()}: ${tab.classList.contains('active') ? '🟢 활성' : '⚪ 비활성'}<br>`;
+                });
+                
+                let contentStatus = '';
+                allContents.forEach((content, index) => {
+                    const style = frameDoc.defaultView.getComputedStyle(content);
+                    const isVisible = style.display !== 'none' && content.classList.contains('active');
+                    contentStatus += `${index + 1}. ${content.id}: ${isVisible ? '🟢 표시' : '⚪ 숨김'}<br>`;
+                });
+                
+                updateResult(`
+                    현재 탭 상태:<br>
+                    <strong>탭 버튼들:</strong><br>${tabStatus}<br>
+                    <strong>탭 컨텐츠들:</strong><br>${contentStatus}
+                `);
+                
+            } catch (error) {
+                updateResult(`❌ 현재 탭 확인 오류: ${error.message}`);
+            }
+        }
+
+        function updateResult(message) {
+            const result = document.getElementById('test-result');
+            const timestamp = new Date().toLocaleTimeString();
+            result.innerHTML = `[${timestamp}] ${message}`;
+        }
+
+        // 자동 시작
+        window.addEventListener('load', () => {
+            updateResult('테스트 준비됨. "메인 사이트 로드" 버튼을 클릭하세요.');
+        });
+    </script>
+</body>
+</html>
