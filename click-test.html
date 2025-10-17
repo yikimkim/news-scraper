@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탭 클릭 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; }
+        .nav-tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #e0e0e0; }
+        .nav-tab { 
+            flex: 1; text-align: center; padding: 15px; background: transparent;
+            border: none; cursor: pointer; font-size: 16px; font-weight: 600;
+            color: #666; transition: all 0.3s ease;
+        }
+        .nav-tab.active { background: white; color: #2196F3; border-bottom: 3px solid #2196F3; }
+        .nav-tab:hover { background: #e3f2fd; color: #2196F3; }
+        .tab-content { display: none; padding: 40px; }
+        .tab-content.active { display: block; }
+        .status { padding: 10px; margin: 10px 0; background: #e8f4fd; border-radius: 4px; }
+        .log { font-family: monospace; background: #f0f0f0; padding: 10px; margin: 10px 0; 
+               border-radius: 4px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 탭 전환 클릭 테스트</h1>
+    
+    <div class="test-section">
+        <h2>현재 상태</h2>
+        <div class="status" id="status">준비 중...</div>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">로그 지우기</button>
+        <button onclick="runAutoTest()">자동 테스트 실행</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>탭 네비게이션</h2>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('quick')" id="tab-quick">⚡ 빠른 검색</button>
+            <button class="nav-tab" onclick="switchTab('boards')" id="tab-boards">📂 내 게시판</button>
+            <button class="nav-tab" onclick="switchTab('government')" id="tab-government">🏛️ 정부 보도자료</button>
+            <button class="nav-tab" onclick="switchTab('manage')" id="tab-manage">⚙️ 설정</button>
+        </div>
+        
+        <div id="quick-tab" class="tab-content active">
+            <h3>⚡ 빠른 검색 탭</h3>
+            <p>이 탭이 보이면 빠른 검색 탭이 활성화된 상태입니다.</p>
+            <p>상단의 다른 탭들을 클릭해보세요.</p>
+        </div>
+        
+        <div id="boards-tab" class="tab-content">
+            <h3>📂 내 게시판 탭</h3>
+            <p>이 탭이 보이면 내 게시판 탭이 활성화된 상태입니다.</p>
+            <p>성공! 탭 전환이 정상적으로 작동합니다.</p>
+        </div>
+        
+        <div id="government-tab" class="tab-content">
+            <h3>🏛️ 정부 보도자료 탭</h3>
+            <p>이 탭이 보이면 정부 보도자료 탭이 활성화된 상태입니다.</p>
+            <p>성공! 탭 전환이 정상적으로 작동합니다.</p>
+        </div>
+        
+        <div id="manage-tab" class="tab-content">
+            <h3>⚙️ 설정 탭</h3>
+            <p>이 탭이 보이면 설정 탭이 활성화된 상태입니다.</p>
+            <p>성공! 탭 전환이 정상적으로 작동합니다.</p>
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function addLog(message) {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logCount++;
+            logDiv.innerHTML += `[${logCount}] ${time}: ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+            addLog(`상태 업데이트: ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            logCount = 0;
+            addLog('로그를 지웠습니다');
+        }
+        
+        function switchTab(tabName) {
+            try {
+                addLog(`탭 전환 요청: ${tabName}`);
+                updateStatus(`탭 전환 중: ${tabName}`);
+                
+                // 모든 탭 버튼에서 active 클래스 제거
+                const allTabs = document.querySelectorAll('.nav-tab');
+                allTabs.forEach(tab => {
+                    tab.classList.remove('active');
+                    addLog(`탭 버튼 비활성화: ${tab.textContent.trim()}`);
+                });
+                
+                // 모든 탭 컨텐츠에서 active 클래스 제거  
+                const allContents = document.querySelectorAll('.tab-content');
+                allContents.forEach(content => {
+                    content.classList.remove('active');
+                    addLog(`탭 컨텐츠 숨김: ${content.id}`);
+                });
+                
+                // 클릭된 탭 버튼 활성화
+                const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    addLog(`탭 버튼 활성화: ${targetTab.textContent.trim()}`);
+                } else if (event && event.target) {
+                    event.target.classList.add('active');
+                    addLog(`이벤트 타겟으로 탭 버튼 활성화`);
+                } else {
+                    addLog(`⚠️ 탭 버튼을 찾을 수 없음: ${tabName}`);
+                }
+                
+                // 해당 탭 컨텐츠 표시
+                const targetContent = document.getElementById(tabName + '-tab');
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                    addLog(`✅ 탭 컨텐츠 표시: ${targetContent.id}`);
+                    updateStatus(`✅ 탭 전환 완료: ${tabName}`);
+                } else {
+                    addLog(`❌ 탭 컨텐츠를 찾을 수 없음: ${tabName}-tab`);
+                    updateStatus(`❌ 탭 전환 실패: ${tabName}`);
+                }
+                
+            } catch (error) {
+                addLog(`❌ 오류 발생: ${error.message}`);
+                updateStatus(`❌ 오류: ${error.message}`);
+            }
+        }
+        
+        function runAutoTest() {
+            addLog('=== 자동 테스트 시작 ===');
+            let delay = 0;
+            
+            ['boards', 'government', 'manage', 'quick'].forEach((tab, index) => {
+                setTimeout(() => {
+                    addLog(`자동 테스트 ${index + 1}/4: ${tab}`);
+                    switchTab(tab);
+                    if (index === 3) {
+                        setTimeout(() => addLog('=== 자동 테스트 완료 ==='), 500);
+                    }
+                }, delay);
+                delay += 1500;
+            });
+        }
+        
+        // 페이지 로드 시 초기화
+        window.onload = function() {
+            updateStatus('페이지 로드 완료');
+            addLog('테스트 준비됨');
+            
+            // DOM 요소 확인
+            const tabs = document.querySelectorAll('.nav-tab');
+            const contents = document.querySelectorAll('.tab-content');
+            addLog(`탭 버튼 개수: ${tabs.length}`);
+            addLog(`탭 컨텐츠 개수: ${contents.length}`);
+            
+            // 5초 후 자동 테스트
+            setTimeout(() => {
+                addLog('5초 후 자동 테스트를 시작합니다...');
+                runAutoTest();
+            }, 5000);
+        };
+    </script>
+</body>
+</html>

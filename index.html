@@ -83,12 +83,16 @@
 
         /* 탭 컨텐츠 */
         .tab-content {
-            display: none;
+            display: none !important;
             padding: 40px;
         }
 
         .tab-content.active {
-            display: block;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 1 !important;
         }
 
         /* 고정 키워드 섹션 */
@@ -859,6 +863,28 @@
             }
         }
         }
+        /* 탭 전환 피드백 애니메이션 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1079,6 +1105,36 @@
                 console.log('뉴스 스크래퍼가 준비되었습니다!');
                 console.log('DOM 초기화 시작...');
                 
+                // 🔧 탭 초기 상태 강제 설정
+                console.log('🔧 탭 초기 상태 설정 중...');
+                
+                // 모든 탭 콘텐츠를 명시적으로 숨김
+                const allTabContents = document.querySelectorAll('.tab-content');
+                allTabContents.forEach(content => {
+                    content.classList.remove('active');
+                    console.log(`   - 탭 숨김: ${content.id}`);
+                });
+                
+                // 모든 탭 버튼을 명시적으로 비활성화
+                const allTabButtons = document.querySelectorAll('.nav-tab');
+                allTabButtons.forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                // 빠른 검색 탭만 명시적으로 활성화
+                const quickTab = document.getElementById('quick-tab');
+                const quickButton = document.querySelector('[onclick="switchTab(\'quick\')"]');
+                
+                if (quickTab && quickButton) {
+                    quickTab.classList.add('active');
+                    quickButton.classList.add('active');
+                    console.log('✅ 빠른 검색 탭 초기화 완료');
+                } else {
+                    console.error('❌ 빠른 검색 탭 요소를 찾을 수 없음');
+                }
+                
+                console.log('🎯 탭 초기화 완료, 메인 시스템 초기화 시작...');
+                
                 updateAllKeywordLists();
                 updateStatistics();
                 setupNewsSourceSelector();
@@ -1111,6 +1167,26 @@
                 // switchTab 함수 확인
                 if (typeof switchTab === 'function') {
                     console.log('✅ switchTab 함수가 정상적으로 정의되었습니다');
+                    
+                    // 10초 후 자동 탭 전환 테스트 (사용자 확인용)
+                    setTimeout(() => {
+                        console.log('🧪 자동 탭 전환 테스트 시작 (사용자 확인용)');
+                        
+                        // boards 탭으로 전환
+                        setTimeout(() => switchTab('boards'), 1000);
+                        
+                        // government 탭으로 전환  
+                        setTimeout(() => switchTab('government'), 3000);
+                        
+                        // 다시 quick 탭으로 돌아가기
+                        setTimeout(() => switchTab('quick'), 5000);
+                        
+                        setTimeout(() => {
+                            console.log('🎉 자동 테스트 완료! 탭 전환이 보이셨나요?');
+                        }, 6000);
+                        
+                    }, 10000);
+                    
                 } else {
                     console.error('❌ switchTab 함수가 정의되지 않았습니다!');
                 }
@@ -1121,50 +1197,138 @@
         });
 
         // 탭 전환
+        // 탭 전환 시각적 피드백 함수
+        function showTabSwitchFeedback(tabName) {
+            const tabNames = {
+                'quick': '⚡ 빠른 검색',
+                'boards': '📂 내 게시판', 
+                'government': '🏛️ 정부 보도자료',
+                'manage': '⚙️ 설정'
+            };
+            
+            // 기존 피드백 제거
+            const existingFeedback = document.getElementById('tab-switch-feedback');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
+            
+            // 새 피드백 생성
+            const feedback = document.createElement('div');
+            feedback.id = 'tab-switch-feedback';
+            feedback.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #4CAF50, #45a049);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                font-weight: bold;
+                font-size: 1rem;
+                z-index: 10000;
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                transition: all 0.3s ease;
+                animation: slideInRight 0.3s ease;
+            `;
+            feedback.textContent = `${tabNames[tabName]} 활성화됨`;
+            
+            document.body.appendChild(feedback);
+            
+            // 3초 후 자동 제거
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => feedback.remove(), 300);
+                }
+            }, 3000);
+        }
+        
         function switchTab(tabName) {
             try {
-                console.log('탭 전환:', tabName);
+                console.log(`🔄 탭 전환 시작: ${tabName}`);
+                
+                // 시각적 피드백 표시
+                showTabSwitchFeedback(tabName);
+                
+                // 현재 활성 탭 상태 확인
+                const currentActiveTab = document.querySelector('.nav-tab.active');
+                const currentActiveContent = document.querySelector('.tab-content.active');
+                console.log(`현재 활성 탭: ${currentActiveTab ? currentActiveTab.textContent.trim() : 'none'}`);
+                console.log(`현재 활성 컨텐츠: ${currentActiveContent ? currentActiveContent.id : 'none'}`);
                 
                 // 모든 탭 버튼에서 active 클래스 제거
-                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                const allTabs = document.querySelectorAll('.nav-tab');
+                console.log(`총 탭 버튼 수: ${allTabs.length}`);
+                allTabs.forEach(tab => {
+                    tab.classList.remove('active');
+                    console.log(`탭 버튼 비활성화: ${tab.textContent.trim()}`);
+                });
                 
                 // 모든 탭 컨텐츠에서 active 클래스 제거  
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const allContents = document.querySelectorAll('.tab-content');
+                console.log(`총 탭 컨텐츠 수: ${allContents.length}`);
+                allContents.forEach(content => {
+                    content.classList.remove('active');
+                    console.log(`탭 컨텐츠 숨김: ${content.id} (display: ${getComputedStyle(content).display})`);
+                });
                 
                 // 클릭된 탭 버튼 활성화
                 const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
                 if (targetTab) {
                     targetTab.classList.add('active');
+                    console.log(`✅ 탭 버튼 활성화: ${targetTab.textContent.trim()}`);
                 } else if (event && event.target) {
                     event.target.classList.add('active');
+                    console.log(`✅ 이벤트 타겟으로 탭 버튼 활성화`);
+                } else {
+                    console.warn(`⚠️ 탭 버튼을 찾을 수 없음: ${tabName}`);
                 }
                 
                 // 해당 탭 컨텐츠 표시
                 const targetContent = document.getElementById(tabName + '-tab');
                 if (targetContent) {
+                    console.log(`탭 컨텐츠 발견: ${targetContent.id}`);
                     targetContent.classList.add('active');
+                    
+                    // CSS 적용 확인
+                    setTimeout(() => {
+                        const computedStyle = getComputedStyle(targetContent);
+                        console.log(`✅ 탭 컨텐츠 표시 완료: ${targetContent.id}`);
+                        console.log(`   - display: ${computedStyle.display}`);
+                        console.log(`   - visibility: ${computedStyle.visibility}`);
+                        console.log(`   - opacity: ${computedStyle.opacity}`);
+                        console.log(`   - z-index: ${computedStyle.zIndex}`);
+                        
+                        if (computedStyle.display === 'none') {
+                            console.error(`❌ 탭 컨텐츠가 여전히 숨겨져 있음: ${targetContent.id}`);
+                        }
+                    }, 100);
+                    
                 } else {
-                    console.error(`탭 컨텐츠를 찾을 수 없습니다: ${tabName}-tab`);
+                    console.error(`❌ 탭 컨텐츠를 찾을 수 없습니다: ${tabName}-tab`);
                 }
                 
                 // 탭별 초기화 함수 호출
                 if (tabName === 'boards') {
                     updateAllKeywordLists();
-                    console.log('내 게시판 탭 활성화됨');
+                    console.log('🎯 내 게시판 탭 초기화 완료');
                 } else if (tabName === 'manage') {
                     updateAllKeywordLists();
                     updateStatistics();
-                    console.log('설정 탭 활성화됨');
+                    console.log('🎯 설정 탭 초기화 완료');
                 } else if (tabName === 'government') {
                     initGovernmentTab();
-                    console.log('정부 보도자료 탭 활성화됨');
+                    console.log('🎯 정부 보도자료 탭 초기화 완료');
                 } else if (tabName === 'quick') {
                     updateAllKeywordLists();
-                    console.log('빠른 검색 탭 활성화됨');
+                    console.log('🎯 빠른 검색 탭 초기화 완료');
                 }
                 
+                console.log(`🎉 탭 전환 완료: ${tabName}`);
+                
             } catch (error) {
-                console.error('탭 전환 오류:', error);
+                console.error('❌ 탭 전환 오류:', error);
+                console.error('스택 트레이스:', error.stack);
             }
         }
 
